@@ -35,7 +35,7 @@ integer i, j;
 
 
 //keeps track of the prevTurn, this will be obtained from the main controller module later
-reg [1:0] prevTurn = 2'b01;
+reg [1:0] prevTurn = 2'b10;
 
 integer checker_st = 0; //0&1 determine limits, 2 row and column checking
 
@@ -55,8 +55,6 @@ for(i = 0; i <= 9; i = i + 1)
 		end
 	end
 
-
-	
 end
 
 always @(posedge clk)
@@ -109,7 +107,7 @@ begin
 		if ((-dxmin) <= dymax) begin
 			negdiagoffset_min <= dxmin;
 		end else if ((-dxmin) > dymax) begin
-				negdiagoffset_min <= dymax;
+			negdiagoffset_min <= dymax;
 		end	
 		
 		checker_st <= 2;
@@ -128,14 +126,14 @@ begin
 			//////////////////////////////////////////
 					//row debugging//
 					//x debugging//
-				board[2][1] = 2'b01;
-				board[2][2] = 2'b01;
-				board[2][3] = 2'b01; 
+				board[2][1] = 2'b11;
+				board[2][2] = 2'b11;
+				board[2][3] = 2'b11; 
 				board[2][4] = 2'b11;
 				board[2][5] = 2'b11;
 				board[2][6] = 2'b11;
-				board[2][7] = 2'b01; 
-				board[2][8] = 2'b01;
+				board[2][7] = 2'b11; 
+				board[2][8] = 2'b11;
 				
 					//column debugging
 					//y debugging
@@ -147,26 +145,23 @@ begin
 				board[5][2] = 2'b11;
 				board[6][2] = 2'b11;
 				board[7][2] = 2'b11;
-				
-			debug <= dy;
-			score <= ycounter;
 			
 			//row checking
 			if (xcounter == 4 & prevTurn == 2'b01) begin
-					scoreTrig <= scoreTrig + 1;
-					checker_st <= 6;
-				end else if (xcounter == 4 && prevTurn == 2'b10) begin 
-					scoreCirc <= scoreCirc + 1;
-					checker_st <= 6;
-				end else if(dx > dxmax) begin
-					checker_st <= 3;
-				end else if(board[fakePosy][fakePosx + dx] == prevTurn) begin
-					dx <= dx + 1;
-					xcounter <= xcounter + 1;	
-				end else begin
-					dx <= dx + 1;
-					xcounter <= 0;
-				end
+				scoreTrig <= scoreTrig + 1;
+				checker_st <= 6;
+			end else if (xcounter == 4 && prevTurn == 2'b10) begin 
+				scoreCirc <= scoreCirc + 1;
+				checker_st <= 6;
+			end else if(dx > dxmax) begin
+				xcounter <= 0;
+			end else if(board[fakePosy][fakePosx + dx] == prevTurn) begin
+				dx <= dx + 1;
+				xcounter <= xcounter + 1;	
+			end else begin
+				dx <= dx + 1;
+				xcounter <= 0;
+			end
 			
 			//column checking
 			if (ycounter == 4 && prevTurn == 2'b01) begin
@@ -176,7 +171,7 @@ begin
 				scoreCirc <= scoreCirc + 1;
 				checker_st <= 6;
 	   	end else if(dy > dymax) begin
-				checker_st <= 3;
+				ycounter <= 0;
 	   	end else if(board[fakePosy + dy][fakePosx] == prevTurn) begin
 				dy <= dy + 1;
 				ycounter <= ycounter + 1;	
@@ -185,18 +180,84 @@ begin
 				ycounter <= 0;
 			end
 			
+			if (dy > dymax && dx > dxmax)
+			begin
+				checker_st <= 3;
+			end
 			
 			end//endcase
-		3: begin
 			
-			end
+			//diagonal checking
+		3: begin
 		
+			debug <= posdiagoffset_min;
+			
+					//positive diag debug
+				board[1][1] = 2'b10;
+				board[2][2] = 2'b11;
+				board[3][3] = 2'b11;
+				board[4][4] = 2'b10;
+				board[5][5] = 2'b11;
+				board[6][6] = 2'b11;
+				board[7][7] = 2'b11;
+				board[8][8] = 2'b10;
+				board[9][9] = 2'b10;
+				
+				
+				//negative diag debug	
+				board[1][9] = 2'b10;
+				board[2][8] = 2'b10;
+				board[3][7] = 2'b10;
+				board[4][6] = 2'b10;
+				board[5][5] = 2'b11;
+				board[6][4] = 2'b10;
+				board[7][3] = 2'b10;
+				board[8][2] = 2'b10;
+				board[9][1] = 2'b10;
+		
+			//+ve slope diagonal checking
+			if (posdiagcounter == 4 && prevTurn == 2'b01) begin
+				scoreTrig <= scoreTrig + 1;
+				checker_st <= 7;
+			end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
+				scoreCirc <= scoreCirc + 1;
+				checker_st <= 7;
+			end else if(posdiagoffset > posdiagoffset_max) begin 
+				posdiagcounter <= 0; //
+			end else if(board[fakePosy + posdiagoffset][fakePosx + posdiagoffset] == prevTurn) begin
+				posdiagoffset <= posdiagoffset + 1;
+				posdiagcounter <= posdiagcounter + 1;	
+			end else begin
+				posdiagoffset <= posdiagoffset + 1;
+				posdiagcounter <= 0;
+			end
+			
+				
+			//-ve slope diagonal checking
+			if (negdiagcounter == 4 && prevTurn == 2'b01) begin
+				scoreTrig <= scoreTrig + 1;
+				checker_st <= 7;
+			end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
+				scoreCirc <= scoreCirc + 1;
+				checker_st <= 7;
+			end else if(negdiagoffset > negdiagoffset_max) begin 
+				negdiagcounter <= 0;
+			end else if(board[fakePosy - negdiagoffset][fakePosx + negdiagoffset] == prevTurn) begin
+				negdiagoffset <= negdiagoffset + 1;
+				negdiagcounter <= negdiagcounter + 1;	
+			end else begin
+				negdiagoffset <= negdiagoffset + 1;
+				negdiagcounter <= 0;
+			end
+			
+			if (negdiagoffset > negdiagoffset_max && posdiagoffset > posdiagoffset_max)
+			begin
+				score <= 7;
+			end
+			end
 		endcase
 		
 end //end always
-
-
-
 
 
 endmodule
