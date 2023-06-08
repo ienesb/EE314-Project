@@ -3,8 +3,8 @@ module controller(
 						input logic_0_button,
 						input logic_1_button,
 						input activity_button,
-						output reg [7:0] debug, //debuging variables
-						output reg [7:0] prevStatedebug
+						output reg [9:0] debug, //debuging variables
+						output reg [9:0] prevStatedebug
 						);
 
 //
@@ -132,17 +132,19 @@ begin
 	end else if ( (logic_1_button == buttonactivehighlow) && ((pressCountery == 'd4) && (pressCounterx <= 3)) ) begin 
 		x[pressCounterx] <= 1'b1; 
 		pressCounterx <= pressCounterx + 'd1;
+		debug <= y;
 		//debug <= pressCounterx + pressCountery;
 		
-	end else if (pressCounterx == 4 && pressCountery == 4) begin
-		//prevStatedebug <= {y, x};
+	end else if (pressCounterx == 4 && pressCountery == 4 && activity_button == buttonactivehighlow) begin
+		prevStatedebug <= {y,x};
 		game_st <= invld_mv_st;
-		//debug <= 7;
+		
 	end
 	end //end case 1 
 	
 	invld_mv_st:begin
-	
+		
+		
 		// reset the counters for future use
 		pressCounterx <= 0;
 		pressCountery <= 0;
