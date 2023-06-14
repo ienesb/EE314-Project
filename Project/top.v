@@ -30,6 +30,15 @@ module top(
     wire [15:0] frameX;
     wire [15:0] frameY;
     
+	 wire [1:0] data_b;
+	 
+	 wire [6:0] addr_a;
+    wire [6:0] addr_b;
+	 
+    wire we_b;
+	 
+	 wire [1:0] q_a;
+    wire [1:0] q_b;
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
     horizontal_counter VGA_Horiz(clk_25_MHz, enable_V_Counter, H_Count_Value);
@@ -38,7 +47,13 @@ module top(
 	 assign frameX = (H_Count_Value < 784 && H_Count_Value > 143 && V_Count_Value < 515 && V_Count_Value > 34) ? (H_Count_Value - 144): 16'b0000000000000000;
     assign frameY = (H_Count_Value < 784 && H_Count_Value > 143 && V_Count_Value < 515 && V_Count_Value > 34) ? (V_Count_Value - 35): 16'b0000000000000000;
     
-	 rgbSelector rgbs(frameX, frameY, rgb);
+	 rgbSelector rgbs(CLOCK_50, frameX, frameY, q_a, rgb, addr_a);
+	 board_memory board(
+		 data_b,
+		 addr_a, addr_b,
+		 we_b, CLOCK_50,
+		 q_a, q_b
+	 );
 	 // single_port_ram spr(3'b000, 640 * frameY + frameX, 1'b0, CLOCK_50, rgb);
     vgaDecoder vd(rgb, vga);
 	 
