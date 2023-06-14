@@ -1,0 +1,41 @@
+import cv2
+import numpy as np
+import sys
+
+#name = "tri"
+#name = "circle"
+name = "empty"
+
+img = cv2.imread(f"{name}.png", 1)
+
+img = cv2.resize(img, (300,300))
+
+(imgB, imgG, imgR) = cv2.split(img)
+
+
+with open(f"{name}.mem", "w") as f:
+    for i in range(30):
+        for j in range(30):
+            if imgB[i][j] > 200:
+                if imgG[i][j] > 200:
+                    if imgR[i][j] > 200:
+                        f.write("111\n")
+                    else:
+                        f.write("011\n")
+                else:
+                    if imgR[i][j] > 200:
+                        f.write("101\n")
+                    else:
+                        f.write("001\n")
+            else:
+                if imgG[i][j] > 200:
+                    if imgR[i][j] > 200:
+                        f.write("110\n")
+                    else:
+                        f.write("010\n")
+                else:
+                    if imgR[i][j] > 200:
+                        f.write("100\n")
+                    else:
+                        f.write("000\n")
+
