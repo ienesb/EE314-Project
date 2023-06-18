@@ -36,7 +36,7 @@ parameter modulo_st = 3'b111; // bonus
 
 // internal variables and counters
 parameter dbparam = 'd1; //change this for the time of debouncing. also change the parse_inp_st if statement conditions
-parameter buttonactivehighlow = 0; //set as 0 for active low behavior
+parameter buttonactivehighlow = 1; //set as 0 for active low behavior
 
 
 integer pressCounterx = 0; //counts the number of inputed x and y bits

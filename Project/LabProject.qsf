@@ -50,14 +50,6 @@ set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_global_assignment -name VERILOG_FILE wincheck.v
-set_global_assignment -name VERILOG_FILE vgaDecoder.v
-set_global_assignment -name VERILOG_FILE vertical_counter.v
-set_global_assignment -name VERILOG_FILE top.v
-set_global_assignment -name VERILOG_FILE rgbSelector.v
-set_global_assignment -name VERILOG_FILE horizontal_counter.v
-set_global_assignment -name VERILOG_FILE controller.v
-set_global_assignment -name VERILOG_FILE clock_divider.v
 set_global_assignment -name DEVICE_FILTER_PACKAGE FBGA
 set_global_assignment -name DEVICE_FILTER_PIN_COUNT 896
 set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 6
@@ -124,10 +116,24 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to VGA_R[6]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to VGA_R[7]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to VGA_SYNC_N
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to VGA_VS
-set_global_assignment -name VERILOG_FILE board_memory.v
 set_location_assignment PIN_AA14 -to logic_0_button
 set_location_assignment PIN_AA15 -to logic_1_button
 set_location_assignment PIN_W15 -to activity_button
-set_global_assignment -name VERILOG_FILE mod6.v
 set_location_assignment PIN_V16 -to led
+set_global_assignment -name VERILOG_FILE timer_parameter.v
+set_global_assignment -name VERILOG_FILE edge_detector.v
+set_global_assignment -name VERILOG_FILE debouncer_delayed_fsm.v
+set_global_assignment -name VERILOG_FILE debouncer_delayed.v
+set_global_assignment -name VERILOG_FILE button_top.v
+set_global_assignment -name VERILOG_FILE button.v
+set_global_assignment -name VERILOG_FILE wincheck.v
+set_global_assignment -name VERILOG_FILE vgaDecoder.v
+set_global_assignment -name VERILOG_FILE vertical_counter.v
+set_global_assignment -name VERILOG_FILE top.v
+set_global_assignment -name VERILOG_FILE rgbSelector.v
+set_global_assignment -name VERILOG_FILE horizontal_counter.v
+set_global_assignment -name VERILOG_FILE controller.v
+set_global_assignment -name VERILOG_FILE clock_divider.v
+set_global_assignment -name VERILOG_FILE board_memory.v
+set_global_assignment -name VERILOG_FILE mod6.v
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
