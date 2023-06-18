@@ -30,7 +30,9 @@ module top(
     wire [15:0] frameX;
     wire [15:0] frameY;
     
-	 wire [6:0] addr_a;
+	 // wire [6:0] addr_a;
+	 wire [3:0] addr_x;
+	 wire [3:0] addr_y;
 	 wire [1:0] q_a;
 	 
     
@@ -41,8 +43,8 @@ module top(
 	 assign frameX = (H_Count_Value < 784 && H_Count_Value > 143 && V_Count_Value < 515 && V_Count_Value > 34) ? (H_Count_Value - 144): 16'b0000000000000000;
     assign frameY = (H_Count_Value < 784 && H_Count_Value > 143 && V_Count_Value < 515 && V_Count_Value > 34) ? (V_Count_Value - 35): 16'b0000000000000000;
     
-	 rgbSelector rgbs(CLOCK_50, frameX, frameY, q_a, rgb, addr_a);
-	 board_memory bm(CLOCK_50, addr_a, q_a);
+	 rgbSelector rgbs(CLOCK_50, frameX, frameY, q_a, rgb, addr_x, addr_y);
+	 board_memory bm(CLOCK_50, addr_x, addr_y, q_a);
     
 	 vgaDecoder vd(rgb, vga);
 	 	 
