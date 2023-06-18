@@ -3,6 +3,8 @@ module controller(
 						input logic_0_button,
 						input logic_1_button,
 						input activity_button,
+						input [6:0] addr_x,
+						output reg [1:0] q_a,
 						output reg [9:0] debug, //debuging variables
 						output reg [9:0] prevStatedebug
 						);
@@ -10,7 +12,8 @@ module controller(
 //////////////////////////////////////start of variable declarations////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
 
-reg [1:0] board [9:0][9:0];
+// reg [1:0] board [9:0][9:0];
+reg [1:0] board [128];
 //board coordinates are the in format [y][x] or [row][column]
 //x is + to the right
 //y is + downwards
@@ -33,7 +36,7 @@ parameter modulo_st = 3'b111; // bonus
 
 // internal variables and counters
 parameter dbparam = 'd1; //change this for the time of debouncing. also change the parse_inp_st if statement conditions
-parameter buttonactivehighlow = 1; //set as 0 for active low behavior
+parameter buttonactivehighlow = 0; //set as 0 for active low behavior
 
 
 integer pressCounterx = 0; //counts the number of inputed x and y bits
@@ -95,13 +98,13 @@ initial begin
 	
 	
 	//fills the board with all empty cells
-	for(i = 0; i <= 9; i = i + 1)
-	begin
-		for(j = 0; j <= 9; j = j + 1)
-		begin
-		board[i][j] = 'b00;
-		end
-	end
+//	for(i = 0; i <= 9; i = i + 1)
+//	begin
+//		for(j = 0; j <= 9; j = j + 1)
+//		begin
+//		board[i][j] = 'b01;
+//		end
+//	end
 	
 	scoreCirc = 0;
 	scoreTrig = 0;
@@ -109,7 +112,7 @@ end
 
 //button debouncing
 always @(posedge clk) begin
-
+		
 		// debouncing logic:
 		// we count up for some clock cycle to make sure that the button transience has died down. 
 		// the limit is controlled by dbparam
@@ -134,7 +137,11 @@ always @(posedge clk) begin
 		end
 	end
 
+integer idx, jdx;
 
+always @(posedge clk) begin
+	q_a <= board[addr_x];
+end
 
 
 	
@@ -191,14 +198,16 @@ begin
 		if (y > 10 || x > 10) begin
 			game_st <= parse_inp_st;
 			//debug <= 14;
-		end else if (board[y][x][0] | board[y][x][1]) begin
+		end else if (board[y*10+x][0] | board[y*10+x][1]) begin
 			game_st <= parse_inp_st;
 			//debug <= 13;
 		end else begin
 			game_st <= modulo_st;
-			board[y][x] = prevTurn;
+			board[y*10+x] = prevTurn;
 			//debug <= 15; 
+			
 		end
+		
 		
 	end //end invld_mv_st
 	
@@ -206,10 +215,10 @@ begin
 		//nonmodule related stuff just preparations for win checking
 		
 		//for testing reasons
-		game_st <= win_chck_st;
-		//game_st <= parse_inp_st;
-		//prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
-		//prevTurn[1] = ~prevTurn[1];
+		//game_st <= win_chck_st;
+		game_st <= parse_inp_st;
+		prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
+		prevTurn[1] = ~prevTurn[1];
 		
 		
 	end // end modulo_st
@@ -283,25 +292,25 @@ begin
 				//////////////////////////////////////////
 						//row debugging//
 						//x debugging//
-				board[2][1] = 2'b11;
-				board[2][2] = 2'b11;
-				board[2][3] = 2'b11; 
-				board[2][4] = 2'b11;
-				board[2][5] = 2'b11;
-				board[2][6] = 2'b11;
-				board[2][7] = 2'b11; 
-				board[2][8] = 2'b11;
+				board[21] = 2'b11;
+				board[22] = 2'b11;
+				board[23] = 2'b11; 
+				board[24] = 2'b11;
+				board[25] = 2'b11;
+				board[26] = 2'b11;
+				board[27] = 2'b11; 
+				board[28] = 2'b11;
 				
 						//column debugging
 						//y debugging
-				board[0][2] = 2'b11;
-				board[1][2] = 2'b11;
-				board[2][2] = 2'b11;
-				board[3][2] = 2'b01;
-				board[4][2] = 2'b11;
-				board[5][2] = 2'b11;
-				board[6][2] = 2'b11;
-				board[7][2] = 2'b11;
+				board[02] = 2'b11;
+				board[12] = 2'b11;
+				board[22] = 2'b11;
+				board[32] = 2'b01;
+				board[42] = 2'b11;
+				board[52] = 2'b11;
+				board[62] = 2'b11;
+				board[72] = 2'b11;
 			
 				//row checking
 				if (xcounter == 4 & prevTurn == 2'b01) begin
@@ -312,7 +321,7 @@ begin
 					checker_st <= 6;
 				end else if(dx > dxmax) begin
 					xcounter <= 0;
-				end else if(board[y][x + dx] == prevTurn) begin
+				end else if(board[y*10+ x + dx] == prevTurn) begin
 					dx <= dx + 1;
 					xcounter <= xcounter + 1;	
 				end else begin
@@ -329,7 +338,7 @@ begin
 					checker_st <= 6;
 				end else if(dy > dymax) begin
 					ycounter <= 0;
-				end else if(board[y + dy][x] == prevTurn) begin
+				end else if(board[(y + dy)*10+x] == prevTurn) begin
 					dy <= dy + 1;
 					ycounter <= ycounter + 1;	
 				end else begin
@@ -348,27 +357,27 @@ begin
 			3: begin
 
 					//positive diag debug
-				board[1][1] = 2'b10;
-				board[2][2] = 2'b11;
-				board[3][3] = 2'b11;
-				board[4][4] = 2'b10;
-				board[5][5] = 2'b11;
-				board[6][6] = 2'b11;
-				board[7][7] = 2'b11;
-				board[8][8] = 2'b10;
-				board[9][9] = 2'b10;
+				board[11] = 2'b10;
+				board[22] = 2'b11;
+				board[33] = 2'b11;
+				board[44] = 2'b10;
+				board[55] = 2'b11;
+				board[66] = 2'b11;
+				board[77] = 2'b11;
+				board[88] = 2'b10;
+				board[99] = 2'b10;
 				
 				
 				//negative diag debug	
-				board[1][9] = 2'b10;
-				board[2][8] = 2'b10;
-				board[3][7] = 2'b10;
-				board[4][6] = 2'b10;
-				board[5][5] = 2'b11;
-				board[6][4] = 2'b10;
-				board[7][3] = 2'b10;
-				board[8][2] = 2'b10;
-				board[9][1] = 2'b10;
+				board[19] = 2'b10;
+				board[28] = 2'b10;
+				board[37] = 2'b10;
+				board[46] = 2'b10;
+				board[55] = 2'b11;
+				board[64] = 2'b10;
+				board[73] = 2'b10;
+				board[82] = 2'b10;
+				board[91] = 2'b10;
 		
 				//+ve slope diagonal checking
 				if (posdiagcounter == 4 && prevTurn == 2'b01) begin
@@ -379,7 +388,7 @@ begin
 					checker_st <= 7;
 				end else if(posdiagoffset > posdiagoffset_max) begin 
 					posdiagcounter <= 0; //
-				end else if(board[y + posdiagoffset][x + posdiagoffset] == prevTurn) begin
+				end else if(board[(y + posdiagoffset)*10+x + posdiagoffset] == prevTurn) begin
 					posdiagoffset <= posdiagoffset + 1;
 					posdiagcounter <= posdiagcounter + 1;	
 				end else begin
@@ -397,7 +406,7 @@ begin
 					checker_st <= 7;
 				end else if(negdiagoffset > negdiagoffset_max) begin 
 					negdiagcounter <= 0;
-				end else if(board[y - negdiagoffset][x + negdiagoffset] == prevTurn) begin
+				end else if(board[(y - negdiagoffset)*10+x + negdiagoffset] == prevTurn) begin
 					negdiagoffset <= negdiagoffset + 1;
 					negdiagcounter <= negdiagcounter + 1;	
 				end else begin

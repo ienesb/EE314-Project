@@ -9,8 +9,8 @@ module rgbSelector #(
     input [1:0] board_data_in,
     output [2:0] rgb,
 	 //output reg [6:0] addr,
-	 output reg [3:0] addr_x,
-	 output reg [3:0] addr_y
+	 output reg [6:0] addr_x,
+	 output reg [4:0] addr_y
 );
 
 //    reg [2:0] template [IMG_HEIGHT * IMG_WIDTH - 1:0];
@@ -44,9 +44,15 @@ module rgbSelector #(
 				read <= 1;
 				x_reg <= x[4:0];
 				y_reg <= y[4:0];
-				// addr <= ((x-160)/32) + (y/32)*10;
-				addr_x <= ((x-160)/32); // x[8:5] - 10;
-				addr_y <= (y/32); // y[8:5];
+				addr_x <= ((x-160)/32) + (y/32)*10;
+//				addr_x <= 0;
+//				addr_y <= 4;
+//				addr_x <= ((x-160)/32);
+//				addr_y <= (y/32);
+//				addr_x <= x[9:5];
+				addr_y <= y[9:5];
+//				addr_x <= 0;
+//				addr_y <= 0;
 			end
 			else begin
 				read <= 0;
