@@ -248,8 +248,8 @@ begin
 				//looping limits setup for rows and columns
 				dx <= dxmin;
 				dy <= dymin;
-		
-		
+				
+				
 				//looping limts calculation for positive diagonals
 				if ((-dxmin) >= (-dymin)) begin
 					posdiagoffset_min <= dymin;
@@ -285,43 +285,20 @@ begin
 				//setting up the diagonal checking cuonters
 				posdiagoffset <= posdiagoffset_min;
 				negdiagoffset <= negdiagoffset_min;
-			
+
 				//every thing above this point will be incorporated into the main controller
 				//the winchecker state in main controller will be at most composed of two stages
-			
-				//////////////////////////////////////////
-						//row debugging//
-						//x debugging//
-				board[21] = 2'b11;
-				board[22] = 2'b11;
-				board[23] = 2'b11; 
-				board[24] = 2'b11;
-				board[25] = 2'b11;
-				board[26] = 2'b11;
-				board[27] = 2'b11; 
-				board[28] = 2'b11;
-				
-						//column debugging
-						//y debugging
-				board[02] = 2'b11;
-				board[12] = 2'b11;
-				board[22] = 2'b11;
-				board[32] = 2'b01;
-				board[42] = 2'b11;
-				board[52] = 2'b11;
-				board[62] = 2'b11;
-				board[72] = 2'b11;
 			
 				//row checking
 				if (xcounter == 4 & prevTurn == 2'b01) begin
 					scoreTrig <= scoreTrig + 1;
-					checker_st <= 6;
+					checker_st <= 4;
 				end else if (xcounter == 4 && prevTurn == 2'b10) begin 
 					scoreCirc <= scoreCirc + 1;
-					checker_st <= 6;
+					checker_st <= 4;
 				end else if(dx > dxmax) begin
 					xcounter <= 0;
-				end else if(board[y*10+ x + dx] == prevTurn) begin
+				end else if(board[y*10 + x + dx] == prevTurn) begin
 					dx <= dx + 1;
 					xcounter <= xcounter + 1;	
 				end else begin
@@ -332,13 +309,13 @@ begin
 				//column checking
 				if (ycounter == 4 && prevTurn == 2'b01) begin
 					scoreTrig <= scoreTrig + 1;
-					checker_st <= 6;
+					checker_st <= 4;
 				end else if (ycounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
-					checker_st <= 6;
+					checker_st <= 4;
 				end else if(dy > dymax) begin
 					ycounter <= 0;
-				end else if(board[(y + dy)*10+x] == prevTurn) begin
+				end else if(board[(y + dy)*10 + x] == prevTurn) begin
 					dy <= dy + 1;
 					ycounter <= ycounter + 1;	
 				end else begin
@@ -355,40 +332,17 @@ begin
 			
 				//diagonal checking
 			3: begin
-
-					//positive diag debug
-				board[11] = 2'b10;
-				board[22] = 2'b11;
-				board[33] = 2'b11;
-				board[44] = 2'b10;
-				board[55] = 2'b11;
-				board[66] = 2'b11;
-				board[77] = 2'b11;
-				board[88] = 2'b10;
-				board[99] = 2'b10;
-				
-				
-				//negative diag debug	
-				board[19] = 2'b10;
-				board[28] = 2'b10;
-				board[37] = 2'b10;
-				board[46] = 2'b10;
-				board[55] = 2'b11;
-				board[64] = 2'b10;
-				board[73] = 2'b10;
-				board[82] = 2'b10;
-				board[91] = 2'b10;
 		
 				//+ve slope diagonal checking
 				if (posdiagcounter == 4 && prevTurn == 2'b01) begin
 					scoreTrig <= scoreTrig + 1;
-					checker_st <= 7;
+					checker_st <= 4;
 				end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
-					checker_st <= 7;
+					checker_st <= 4;
 				end else if(posdiagoffset > posdiagoffset_max) begin 
-					posdiagcounter <= 0; //
-				end else if(board[(y + posdiagoffset)*10+x + posdiagoffset] == prevTurn) begin
+					posdiagcounter <= 0; 
+				end else if(board[(y + posdiagoffset)*10+ x + posdiagoffset] == prevTurn) begin
 					posdiagoffset <= posdiagoffset + 1;
 					posdiagcounter <= posdiagcounter + 1;	
 				end else begin
@@ -400,13 +354,13 @@ begin
 				//-ve slope diagonal checking
 				if (negdiagcounter == 4 && prevTurn == 2'b01) begin
 					scoreTrig <= scoreTrig + 1;
-					checker_st <= 7;
+					checker_st <= 4;
 				end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
-					checker_st <= 7;
+					checker_st <= 4;
 				end else if(negdiagoffset > negdiagoffset_max) begin 
 					negdiagcounter <= 0;
-				end else if(board[(y - negdiagoffset)*10+x + negdiagoffset] == prevTurn) begin
+				end else if(board[(y - negdiagoffset)*10 + x + negdiagoffset] == prevTurn) begin
 					negdiagoffset <= negdiagoffset + 1;
 					negdiagcounter <= negdiagcounter + 1;	
 				end else begin
@@ -421,7 +375,15 @@ begin
 					prevTurn[1] = ~prevTurn[1];
 				end
 				end // end diagonal checking
-			
+			4: begin
+					for(i = 0; i <= 9; i = i + 1)
+						begin
+						for(j = 0; j <= 9; j = j + 1)
+						begin
+							board[i*10+j] = prevTurn;
+						end
+					end
+				end
 		endcase
 		
 	end //end win_chck_st
