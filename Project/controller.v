@@ -3,13 +3,12 @@ module controller(
 						input logic_0_button,
 						input logic_1_button,
 						input activity_button,
-						input [6:0] addr_x,
+						input [6:0] addr,
 						output reg [1:0] q_a,
-						output [1:0] turn,
 						output [4:0] xout, //x
 						output [4:0] yout, //y 
-						output [4:0] scoreCircout, //scoreCirc
-						output [4:0] scoreTrigout, // scoreTrig
+						output [4:0] scoreCircOut, //scoreCirc
+						output [4:0] scoreTrigOut, // scoreTrig
 						output [1:0] currentTurn, //prevTurn
 						output reg [9:0] debug, //debuging variables
 						output reg [9:0] prevStatedebug
@@ -114,7 +113,7 @@ end
 
 
 always @(posedge clk) begin
-	q_a <= board[addr_x];
+	q_a <= board[addr];
 end
 
 
@@ -413,6 +412,12 @@ begin
 
 	// assign turn = prevTurn;
 	assign turn = (checker_st == 4) ? 1'b1:1'b0;
+	
+	assign xout = x[4:0];
+	assign yout = y[4:0];
+	assign scoreCircOut = scoreCirc[4:0];
+	assign scoreTrigOut = scoreTrig[4:0];
+	assign currentTurn = prevTurn;
 	
 endmodule
 
