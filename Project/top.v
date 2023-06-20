@@ -42,6 +42,8 @@ module top(
 	wire logic0;
 	wire logic1;
 	wire activity;
+	
+	wire [1:0] turn;
 	 
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
@@ -62,6 +64,7 @@ module top(
 						 activity,
 						 addr_x,
 						 q_a,
+						 turn,
 						 debug, //debuging variables
 						 prevStatedebug
 						);
@@ -80,6 +83,6 @@ module top(
     assign VGA_BLANK_N = 1;
     assign VGA_CLK = clk_25_MHz;
 	 
-	 assign led = logic_0_button;	
+	 assign led = turn[0];	
 	 
 endmodule

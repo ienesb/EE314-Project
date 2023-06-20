@@ -5,6 +5,7 @@ module controller(
 						input activity_button,
 						input [6:0] addr_x,
 						output reg [1:0] q_a,
+						output [1:0] turn,
 						output reg [9:0] debug, //debuging variables
 						output reg [9:0] prevStatedebug
 						);
@@ -215,10 +216,10 @@ begin
 		//nonmodule related stuff just preparations for win checking
 		
 		//for testing reasons
-		//game_st <= win_chck_st;
-		game_st <= parse_inp_st;
-		prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
-		prevTurn[1] = ~prevTurn[1];
+		game_st <= win_chck_st;
+		//game_st <= parse_inp_st;
+		//prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
+		//prevTurn[1] = ~prevTurn[1];
 		
 		
 	end // end modulo_st
@@ -307,25 +308,27 @@ begin
 				end
 			
 				//column checking
-				if (ycounter == 4 && prevTurn == 2'b01) begin
-					scoreTrig <= scoreTrig + 1;
-					checker_st <= 4;
-				end else if (ycounter == 4 && prevTurn == 2'b10) begin
-					scoreCirc <= scoreCirc + 1;
-					checker_st <= 4;
-				end else if(dy > dymax) begin
-					ycounter <= 0;
-				end else if(board[(y + dy)*10 + x] == prevTurn) begin
-					dy <= dy + 1;
-					ycounter <= ycounter + 1;	
-				end else begin
-					dy <= dy + 1;
-					ycounter <= 0;
-				end
+//				if (ycounter == 4 && prevTurn == 2'b01) begin
+//					scoreTrig <= scoreTrig + 1;
+//					checker_st <= 4;
+//				end else if (ycounter == 4 && prevTurn == 2'b10) begin
+//					scoreCirc <= scoreCirc + 1;
+//					checker_st <= 4;
+//				end else if(dy > dymax) begin
+//					ycounter <= 0;
+//				end else if(board[(y + dy)*10 + x] == prevTurn) begin
+//					dy <= dy + 1;
+//					ycounter <= ycounter + 1;	
+//				end else begin
+//					dy <= dy + 1;
+//					ycounter <= 0;
+//				end
 			
-				if (dy > dymax && dx > dxmax)
+				if (dx > dxmax)
 				begin
-					checker_st <= 3;
+					game_st <= parse_inp_st;
+					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
+					prevTurn[1] = ~prevTurn[1];
 				end
 			
 				end//endcase
@@ -334,47 +337,47 @@ begin
 			3: begin
 		
 				//+ve slope diagonal checking
-				if (posdiagcounter == 4 && prevTurn == 2'b01) begin
-					scoreTrig <= scoreTrig + 1;
-					checker_st <= 4;
-				end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
-					scoreCirc <= scoreCirc + 1;
-					checker_st <= 4;
-				end else if(posdiagoffset > posdiagoffset_max) begin 
-					posdiagcounter <= 0; 
-				end else if(board[(y + posdiagoffset)*10+ x + posdiagoffset] == prevTurn) begin
-					posdiagoffset <= posdiagoffset + 1;
-					posdiagcounter <= posdiagcounter + 1;	
-				end else begin
-					posdiagoffset <= posdiagoffset + 1;
-					posdiagcounter <= 0;
-				end
-			
-				
-				//-ve slope diagonal checking
-				if (negdiagcounter == 4 && prevTurn == 2'b01) begin
-					scoreTrig <= scoreTrig + 1;
-					checker_st <= 4;
-				end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
-					scoreCirc <= scoreCirc + 1;
-					checker_st <= 4;
-				end else if(negdiagoffset > negdiagoffset_max) begin 
-					negdiagcounter <= 0;
-				end else if(board[(y - negdiagoffset)*10 + x + negdiagoffset] == prevTurn) begin
-					negdiagoffset <= negdiagoffset + 1;
-					negdiagcounter <= negdiagcounter + 1;	
-				end else begin
-					negdiagoffset <= negdiagoffset + 1;
-					negdiagcounter <= 0;
-				end
-			
-				if (negdiagoffset > negdiagoffset_max && posdiagoffset > posdiagoffset_max)
-				begin
-					game_st <= parse_inp_st;
-					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
-					prevTurn[1] = ~prevTurn[1];
-				end
-				end // end diagonal checking
+//				if (posdiagcounter == 4 && prevTurn == 2'b01) begin
+//					scoreTrig <= scoreTrig + 1;
+//					checker_st <= 4;
+//				end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
+//					scoreCirc <= scoreCirc + 1;
+//					checker_st <= 4;
+//				end else if(posdiagoffset > posdiagoffset_max) begin 
+//					posdiagcounter <= 0; 
+//				end else if(board[(y + posdiagoffset)*10+ x + posdiagoffset] == prevTurn) begin
+//					posdiagoffset <= posdiagoffset + 1;
+//					posdiagcounter <= posdiagcounter + 1;	
+//				end else begin
+//					posdiagoffset <= posdiagoffset + 1;
+//					posdiagcounter <= 0;
+//				end
+//			
+//				
+//				//-ve slope diagonal checking
+//				if (negdiagcounter == 4 && prevTurn == 2'b01) begin
+//					scoreTrig <= scoreTrig + 1;
+//					checker_st <= 4;
+//				end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
+//					scoreCirc <= scoreCirc + 1;
+//					checker_st <= 4;
+//				end else if(negdiagoffset > negdiagoffset_max) begin 
+//					negdiagcounter <= 0;
+//				end else if(board[(y - negdiagoffset)*10 + x + negdiagoffset] == prevTurn) begin
+//					negdiagoffset <= negdiagoffset + 1;
+//					negdiagcounter <= negdiagcounter + 1;	
+//				end else begin
+//					negdiagoffset <= negdiagoffset + 1;
+//					negdiagcounter <= 0;
+//				end
+//			
+//				if (negdiagoffset > negdiagoffset_max && posdiagoffset > posdiagoffset_max)
+//				begin
+//					game_st <= parse_inp_st;
+//					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
+//					prevTurn[1] = ~prevTurn[1]; //prevTurn = ~prevTurn
+//				end
+			end // end diagonal checking
 			4: begin
 					for(i = 0; i <= 9; i = i + 1)
 						begin
@@ -391,7 +394,10 @@ begin
 	
 	
 	endcase
-	end //end the always blocks 	
+	end //end the always blocks 
+
+	// assign turn = prevTurn;
+	assign turn = (checker_st == 4) ? 1'b1:1'b0;
 	
 endmodule
 
