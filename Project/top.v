@@ -46,6 +46,7 @@ module top(
 	 wire [4:0] scoreCircOut;
 	 wire [4:0] scoreTrigOut;
 	 wire [1:0] turn;
+	 wire [1:0] winCondition;
 	 
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
@@ -70,8 +71,7 @@ module top(
 					 scoreCircOut, //scoreCirc
 					 scoreTrigOut, // scoreTrig
 					 turn,
-					 debug, //debuging variables
-					 prevStatedebug);
+					 winCondition);
     
 	 vgaDecoder vd(rgb, vga);
 	 	 

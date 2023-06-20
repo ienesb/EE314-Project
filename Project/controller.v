@@ -10,9 +10,10 @@ module controller(
 						output [4:0] scoreCircOut, //scoreCirc
 						output [4:0] scoreTrigOut, // scoreTrig
 						output [1:0] currentTurn, //prevTurn
-						output reg [9:0] debug, //debuging variables
-						output reg [9:0] prevStatedebug
-						);
+						output reg winCondition,
+						output reg [3:0] movTrig,
+						output reg [3:0] movCirc
+ 						);
 
 //////////////////////////////////////start of variable declarations////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////
@@ -48,7 +49,8 @@ reg [31:0] rstCounter = 0; // counts the second for resetting
 integer pressCounterx = 0; //counts the number of inputed x and y bits
 integer pressCountery = 0;
 integer bookKeeperrst = 0;
-//for initializing the board with 0
+
+//for initializing the board with some values
 integer i;
 integer j;
 integer i2;
@@ -98,22 +100,22 @@ integer checker_st = 0; //0&1 determine limits, 2 row and column checking, 3 dia
 
 // intialization of the game
 initial begin
-
 	y[4] = 0;
 	x[4] = 0;
 	
 	for(i = 0; i <= 9; i = i + 1)
+		begin
+			for(j = 0; j <= 9; j = j + 1)
 			begin
-				for(j = 0; j <= 9; j = j + 1)
-					begin
-						board[i*10+j] = 2'b00;
-					end
+				board[i*10+j] = 2'b00;
 			end
+		end
 end
 
 
 always @(posedge clk) begin
 	q_a <= board[addr];
+	
 end
 
 
@@ -127,11 +129,13 @@ begin
 	//when have entered 4 digits we start inputting the x coordintate(check the if statement condition)
 	
 	parse_inp_st: begin
+	
 	xcounter <= 0;
 	ycounter <= 0;
 	negdiagcounter <= 0;
 	posdiagcounter <= 0;
 	checker_st <= 0;
+	
 	if(firstMove == 1) begin
 	 prevTurn <= 'b01;
 	 firstMove <= 0;
@@ -155,11 +159,11 @@ begin
 	end else if (pressCounterx == 4 && pressCountery == 4 && activity_button == buttonactivehighlow) begin
 		game_st <= invld_mv_st;
 	end else if ((pressCounterx < 4 || pressCountery < 4) && activity_button == buttonactivehighlow) begin
-		 pressCounterx <= 0;
-		 pressCountery <= 0;
-		 x <= 0;
-		 y <= 0;
-		 game_st <= parse_inp_st;
+		pressCounterx <= 0;
+		pressCountery <= 0;
+		x <= 0;
+		y <= 0;
+		game_st <= parse_inp_st;
 	end
 	end //end case 1 
 	
@@ -182,42 +186,33 @@ begin
 			movCounter <= movCounter + 1; 
 		end
 		
-		
 	end //end invld_mv_st
 	
 	
 	modulo_st: begin
-		//nonmodule related stuff just preparations for win checking
-		
+
 		case (movCounter)
 		
 			movParam + 1:  begin
-				game_st <= rst_st;
-				end
-				
+								game_st <= rst_st;
+								end
 			11: begin
-			     board[bookKeeper[0]] = 2'b11;
+			    board[bookKeeper[0]] = 2'b11;
 				 end
 			12: begin
-					board[bookKeeper[1]] = 2'b11;
-					end
+				 board[bookKeeper[1]] = 2'b11;
+				 end
 			23: begin
-					board[bookKeeper[2]] = 2'b11;
+				 board[bookKeeper[2]] = 2'b11;
 				 end
 			24: begin
-					board[bookKeeper[3]] = 2'b11;
+				 board[bookKeeper[3]] = 2'b11;
 				 end
 		endcase
-		
-		
- 		
-		//for testing reasons
+	
 		game_st <= win_chck_st;
-		//game_st <= parse_inp_st;
-	   //prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
-		//prevTurn[1] = ~prevTurn[1];
-	   
-	end // end modulo_st
+		
+		end // end modulo_st
 	
 	win_chck_st: begin
 		case (checker_st)
@@ -286,94 +281,95 @@ begin
 				if (xcounter == 4 && prevTurn == 2'b01) begin
 					scoreTrig <= scoreTrig + 1;
 					game_st <= rst_st;
+					winCondition <= 1;
 				end else if (xcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
+					winCondition <= 1;
 				end else if(dx > dxmax) begin
-					game_st <= parse_inp_st;
-					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
-					prevTurn[1] = ~prevTurn[1];
-					checker_st <= 0;
+					xcounter <= 0;
+					checker_st <= 3;
 				end else if(board[y*10 + x + dx] == prevTurn) begin
 					dx <= dx + 1;
 					xcounter <= xcounter + 1;	 
 				end else if (board[y*10 + x + dx] != prevTurn)  begin
 					dx <= dx + 1;
 					xcounter <= 0;
-				end
-				//column checking
-//				if (ycounter == 4 && prevTurn == 2'b01) begin
-//					scoreTrig <= scoreTrig + 1;
-//					checker_st <= 4;
-//				end else if (ycounter == 4 && prevTurn == 2'b10) begin
-//					scoreCirc <= scoreCirc + 1;
-//					checker_st <= 4;
-//				end else if(dy > dymax) begin
-//					ycounter <= 0;
-//				end else if(board[(y + dy)*10 + x] == prevTurn) begin
-//					dy <= dy + 1;
-//					ycounter <= ycounter + 1;	
-//				end else begin
-//					dy <= dy + 1;
-//					ycounter <= 0;
-//				end
+				end			
 			
 				end//endcase
 			
-				//diagonal checking
+				//column checking
 			3: begin
-		
-				//+ve slope diagonal checking
-//				if (posdiagcounter == 4 && prevTurn == 2'b01) begin
-//					scoreTrig <= scoreTrig + 1;
-//					checker_st <= 4;
-//				end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
-//					scoreCirc <= scoreCirc + 1;
-//					checker_st <= 4;
-//				end else if(posdiagoffset > posdiagoffset_max) begin 
-//					posdiagcounter <= 0; 
-//				end else if(board[(y + posdiagoffset)*10+ x + posdiagoffset] == prevTurn) begin
-//					posdiagoffset <= posdiagoffset + 1;
-//					posdiagcounter <= posdiagcounter + 1;	
-//				end else begin
-//					posdiagoffset <= posdiagoffset + 1;
-//					posdiagcounter <= 0;
-//				end
-//			
-//				
-//				//-ve slope diagonal checking
-//				if (negdiagcounter == 4 && prevTurn == 2'b01) begin
-//					scoreTrig <= scoreTrig + 1;
-//					checker_st <= 4;
-//				end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
-//					scoreCirc <= scoreCirc + 1;
-//					checker_st <= 4;
-//				end else if(negdiagoffset > negdiagoffset_max) begin 
-//					negdiagcounter <= 0;
-//				end else if(board[(y - negdiagoffset)*10 + x + negdiagoffset] == prevTurn) begin
-//					negdiagoffset <= negdiagoffset + 1;
-//					negdiagcounter <= negdiagcounter + 1;	
-//				end else begin
-//					negdiagoffset <= negdiagoffset + 1;
-//					negdiagcounter <= 0;
-//				end
-//			
-//				if (negdiagoffset > negdiagoffset_max && posdiagoffset > posdiagoffset_max)
-//				begin
-//					game_st <= parse_inp_st;
-//					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
-//					prevTurn[1] = ~prevTurn[1]; //prevTurn = ~prevTurn
-//				end
-			end // end diagonal checking
-			4: begin
-					for(i = 0; i <= 9; i = i + 1)
-						begin
-						for(j = 0; j <= 9; j = j + 1)
-						begin
-							board[i*10+j] = prevTurn;
-						end
-					end
+				if (ycounter == 4 && prevTurn == 2'b01) begin
+					scoreTrig <= scoreTrig + 1;
+					game_st <= rst_st;
+					winCondition <= 1;
+				end else if (ycounter == 4 && prevTurn == 2'b10) begin
+					scoreCirc <= scoreCirc + 1;
+					game_st <= rst_st;
+					winCondition <= 1;
+				end else if(dy > dymax) begin
+					ycounter <= 0;
+					checker_st <= 4;
+				end else if(board[(y + dy)*10 + x] == prevTurn) begin
+					dy <= dy + 1;
+					ycounter <= ycounter + 1;	
+				end else begin
+					dy <= dy + 1;
+					ycounter <= 0;
 				end
+				end
+				
+			4: begin
+				//+ve slope diagonal checking
+				if (posdiagcounter == 4 && prevTurn == 2'b01) begin
+					scoreTrig <= scoreTrig + 1;
+					game_st <= rst_st;
+					winCondition <= 1;
+				end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
+					scoreCirc <= scoreCirc + 1;
+					game_st <= rst_st;
+					winCondition <= 1;
+				end else if(posdiagoffset > posdiagoffset_max) begin 
+					posdiagcounter <= 0; 
+					checker_st <= 5;
+				end else if(board[(y + posdiagoffset)*10+ x + posdiagoffset] == prevTurn) begin
+					posdiagoffset <= posdiagoffset + 1;
+					posdiagcounter <= posdiagcounter + 1;	
+				end else begin
+					posdiagoffset <= posdiagoffset + 1;
+					posdiagcounter <= 0;
+				end
+				end
+			
+			5: begin
+			
+				//-ve slope diagonal checking
+				if (negdiagcounter == 4 && prevTurn == 2'b01) begin
+					scoreTrig <= scoreTrig + 1;
+					game_st <= rst_st;
+					winCondition <= 1;	
+				end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
+					scoreCirc <= scoreCirc + 1;
+					game_st <= rst_st;
+					winCondition <= 1;
+				end else if(negdiagoffset > negdiagoffset_max) begin 
+					negdiagcounter <= 0;
+					checker_st <= 0;
+					game_st <= parse_inp_st;
+					prevTurn[0] = ~prevTurn[0]; 
+					prevTurn[1] = ~prevTurn[1];
+				end else if(board[(y - negdiagoffset)*10 + x + negdiagoffset] == prevTurn) begin
+					negdiagoffset <= negdiagoffset + 1;
+					negdiagcounter <= negdiagcounter + 1;	
+				end else begin
+					negdiagoffset <= negdiagoffset + 1;
+					negdiagcounter <= 0;
+				end
+		
+			end // end diagonal checking
+	
 		endcase
 		
 	end //end win_chck_st
@@ -382,17 +378,25 @@ begin
 	rst_st: begin
 	
 				if(rstCounter == rstParam) begin
+					//counter and condition reseting
+			
+					winCondition <= 0;
 					rstCounter <= 0;
 					movCounter <= 0;
 					i3 = 0;
 					j3 = 0;
 					bookKeeperrst = 0;
 					
+					//reinitialize the game
 					game_st <= parse_inp_st;
 					
+					//clear the bookKeeper
 					for(bookKeeperrst = 0; bookKeeperrst <= 25; bookKeeperrst = bookKeeperrst + 1) begin
 						bookKeeper[bookKeeperrst] = 0;
+				
 					end
+					
+					//clear the board
 					for(i3 = 0; i3 <= 9; i3 = i3 + 1)
 					begin
 						for(j3 = 0; j3 <= 9; j3 = j3 + 1)
@@ -400,13 +404,13 @@ begin
 							board[i3*10+j3] = 2'b00;
 						end
 					end
-				end else begin
-					rstCounter <= rstCounter + 1;
-				end
-				
+					end else begin
+						rstCounter <= rstCounter + 1;
+					end
 				
 				end//end case
 		default: game_st <= parse_inp_st;
+		
 	endcase
 	end //end the always blocks 
 
