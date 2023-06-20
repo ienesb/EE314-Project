@@ -6,6 +6,11 @@ module controller(
 						input [6:0] addr_x,
 						output reg [1:0] q_a,
 						output [1:0] turn,
+						output [4:0] xout, //x
+						output [4:0] yout, //y 
+						output [4:0] scoreCircout, //scoreCirc
+						output [4:0] scoreTrigout, // scoreTrig
+						output [1:0] currentTurn, //prevTurn
 						output reg [9:0] debug, //debuging variables
 						output reg [9:0] prevStatedebug
 						);
@@ -15,52 +20,58 @@ module controller(
 
 // reg [1:0] board [9:0][9:0];
 reg [1:0] board [128];
+reg [8:0] bookKeeper[25:0];
 //board coordinates are the in format [y][x] or [row][column]
 //x is + to the right
 //y is + downwards
-
+//bookKeeper keeps list of played coordinates
 
 // state definitions
 
-reg [2:0] game_st;
+reg [2:0] game_st = parse_inp_st;
 
 parameter parse_inp_st = 3'b000; //reads the input
-parameter trig_st = 3'b001;
-parameter circ_st = 3'b010;
-parameter sqr_st = 3'b011;
-parameter invld_mv_st = 3'b100;
-parameter win_chck_st = 3'b101; //most probably resetting will be done in this state
-parameter rst_st = 3'b110; //not going to be needed most probably
-parameter modulo_st = 3'b111; // bonus
-
-
-//mod 6 stuff
-integer movCounter = 0;
-reg [1:0] bookKeeper[24:0];
-
-// internal variables and counters
-parameter dbparam = 'd1; //change this for the time of debouncing. also change the parse_inp_st if statement conditions
+parameter invld_mv_st = 3'b001; 
+parameter win_chck_st = 3'b010; 
+parameter modulo_st = 3'b011;
+parameter rst_st = 3'b111; 
+ 
+//other parameters
+parameter rstParam = 'd1_0000_0000; //number of seconds * 10mill
+parameter movParam = 25;				// max number of moves
 parameter buttonactivehighlow = 1; //set as 0 for active low behavior
 
 
+
+// internal variables and counters
+integer movCounter = 0; //counts the number of total moves played
+reg [31:0] rstCounter = 0; // counts the second for resetting
 integer pressCounterx = 0; //counts the number of inputed x and y bits
 integer pressCountery = 0;
-
-reg [1:0] prevTurn; //keeps track of who played last
-reg [4:0] y; // the location we should place the circle or triangle at
-reg [4:0] x; //extra bit for 2's complement operations later
-
+integer bookKeeperrst = 0;
 //for initializing the board with 0
 integer i;
 integer j;
 integer i2;
 integer j2;
+integer i3;
+integer j3;
+
+
+reg [1:0] prevTurn = 0; //keeps track of who played last
+reg [4:0] y; // the location we should place the circle or triangle at
+reg [4:0] x; //extra bit for 2's complement operations later
+
+reg firstMove = 1; // i dont understand how or why this solves the bug but it does
+
+
 
 ///////////////////////////////////////////////win checking variables/////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //scores
-integer scoreTrig, scoreCirc;
+integer scoreTrig = 0;
+integer scoreCirc = 0;
 
 // the  looping limits 
 integer dxmin, dymin, dxmax, dymax, negdiagoffset_min, negdiagoffset_max, posdiagoffset_min, posdiagoffset_max;
@@ -78,11 +89,10 @@ integer negdiagcounter = 0;
 
 integer checker_st = 0; //0&1 determine limits, 2 row and column checking, 3 diagonal checking
 
+
 //////////////////////////////////////////////end of win checking variables/////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// db = debouncing
-integer db0, db1, dba;
 
 //////////////////////////////////////////////end of all variables//////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,64 +103,21 @@ initial begin
 	y[4] = 0;
 	x[4] = 0;
 	
-	game_st = parse_inp_st;
-	prevTurn = 2'b01;
-	debug <= 0;
-	
-	//debouncing counters
-	db0 = 0;
-	db1 = 0;
-	dba = 0;
-	
-	
-	//fills the board with all empty cells
-//	for(i = 0; i <= 9; i = i + 1)
-//	begin
-//		for(j = 0; j <= 9; j = j + 1)
-//		begin
-//		board[i][j] = 'b01;
-//		end
-//	end
-	
-	scoreCirc = 0;
-	scoreTrig = 0;
+	for(i = 0; i <= 9; i = i + 1)
+			begin
+				for(j = 0; j <= 9; j = j + 1)
+					begin
+						board[i*10+j] = 2'b00;
+					end
+			end
 end
 
-//button debouncing
-always @(posedge clk) begin
-		
-		// debouncing logic:
-		// we count up for some clock cycle to make sure that the button transience has died down. 
-		// the limit is controlled by dbparam
-		// note: buttons are active low
-		
-		if (logic_0_button == buttonactivehighlow && db0 < dbparam) begin
-			db0 <= db0 + 'd1;
-		end else if (logic_0_button == ~buttonactivehighlow) begin
-			db0 <= 0;
-		end
-		
-		if (logic_1_button == buttonactivehighlow && db1 < dbparam) begin
-			db1 <= db1 + 'd1;
-		end else if (logic_1_button == ~buttonactivehighlow) begin
-			db1 <= 0;
-		end
-		
-		if (activity_button == buttonactivehighlow && dba < dbparam) begin
-			dba <= dba + 'd1;
-		end else if (activity_button == ~buttonactivehighlow) begin
-			dba <= 0;
-		end
-	end
-
-integer idx, jdx;
 
 always @(posedge clk) begin
 	q_a <= board[addr_x];
 end
 
 
-	
 //state machine
 always @(posedge clk)
 begin
@@ -161,96 +128,102 @@ begin
 	//when have entered 4 digits we start inputting the x coordintate(check the if statement condition)
 	
 	parse_inp_st: begin
-		
-	if(logic_0_button == buttonactivehighlow && pressCountery <= 3) begin
+	xcounter <= 0;
+	ycounter <= 0;
+	negdiagcounter <= 0;
+	posdiagcounter <= 0;
+	checker_st <= 0;
+	if(firstMove == 1) begin
+	 prevTurn <= 'b01;
+	 firstMove <= 0;
+	end else if (movCounter == movParam) begin
+		movCounter <= movCounter + 1;
+		game_st <= modulo_st;
+		pressCounterx <= 0;
+		pressCountery <= 0;
+	end else if(logic_0_button == buttonactivehighlow && pressCountery <= 3) begin
 		y[pressCountery] <= 1'b0; 
 		pressCountery <= pressCountery + 'd1;
-		//debug <= pressCounterx + pressCountery;
-		
 	end else if (logic_1_button == buttonactivehighlow && pressCountery <= 3) begin
 		y[pressCountery] <= 1'b1; 
 		pressCountery <= pressCountery + 'd1;
-		//debug <= pressCounterx + pressCountery;
-		
 	end else if (logic_0_button == buttonactivehighlow  && ((pressCountery == 'd4) && pressCounterx <= 3)) begin 
 		x[pressCounterx] <= 1'b0; 
 		pressCounterx <= pressCounterx + 1;
-		//debug <= pressCounterx + pressCountery;
-		
 	end else if ( (logic_1_button == buttonactivehighlow) && ((pressCountery == 'd4) && (pressCounterx <= 3)) ) begin 
 		x[pressCounterx] <= 1'b1; 
 		pressCounterx <= pressCounterx + 'd1;
-		debug <= y;
-		//debug <= pressCounterx + pressCountery;
-		
 	end else if (pressCounterx == 4 && pressCountery == 4 && activity_button == buttonactivehighlow) begin
-		prevStatedebug <= {y,x};
 		game_st <= invld_mv_st;
 	end else if ((pressCounterx < 4 || pressCountery < 4) && activity_button == buttonactivehighlow) begin
-		 x <= 0;
-		 y <= 0;
 		 pressCounterx <= 0;
 		 pressCountery <= 0;
+		 x <= 0;
+		 y <= 0;
 		 game_st <= parse_inp_st;
 	end
 	end //end case 1 
 	
+	
 	invld_mv_st:begin
-		
-		
+			
 		// reset the counters for future use
 		pressCounterx <= 0;
 		pressCountery <= 0;
 		
-		//debuging
-		//board[3][3] = 2'b00;
-		
 		//if input is greater than 10 or if there is already an object in place input another location
-		if (y > 10 || x > 10) begin
+		if (y >= 10 || x >= 10) begin
 			game_st <= parse_inp_st;
-			//debug <= 14;
 		end else if (board[y*10+x][0] | board[y*10+x][1]) begin
 			game_st <= parse_inp_st;
-			//debug <= 13;
 		end else begin
-			game_st <= win_chck_st;
-			board[y*10+x] = prevTurn;
-			movCounter <= movCounter + 1;
-			//debug <= 15; 
-			
+			game_st <= modulo_st;
+			board[y*10+x] = prevTurn; // prevTurn = currentTurn
+			bookKeeper[movCounter] = y*10+x;
+			movCounter <= movCounter + 1; 
 		end
 		
 		
 	end //end invld_mv_st
 	
+	
 	modulo_st: begin
 		//nonmodule related stuff just preparations for win checking
 		
+		case (movCounter)
 		
-		if (movCounter == 25) begin
-			for(i2 = 0; i2 <= 9; i2 = i2 + 1)
-					begin
-					for(j2 = 0; j2 <= 9; j2 = j2 + 1)
-						begin
-							board[i2*10+j2] = prevTurn;
-						end
-			end
-		end
+			movParam + 1:  begin
+				game_st <= rst_st;
+				end
+				
+			11: begin
+			     board[bookKeeper[0]] = 2'b11;
+				 end
+			12: begin
+					board[bookKeeper[1]] = 2'b11;
+					end
+			23: begin
+					board[bookKeeper[2]] = 2'b11;
+				 end
+			24: begin
+					board[bookKeeper[3]] = 2'b11;
+				 end
+		endcase
+		
+		
+ 		
 		//for testing reasons
-		//game_st <= win_chck_st;
+		game_st <= win_chck_st;
 		//game_st <= parse_inp_st;
-		//prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
+	   //prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
 		//prevTurn[1] = ~prevTurn[1];
-		
-		
+	   
 	end // end modulo_st
 	
-	
 	win_chck_st: begin
-	
 		case (checker_st)
 			0: begin
-			
+				
 				//if current position  - 3 < 0 then we loop until -currentPos
 				//else the lower limit is directly -3
 				//this is done to avoid iterating outside of the array at an index such 
@@ -266,7 +239,7 @@ begin
 				end
 	
 			1: begin
-	
+				
 				//looping limits setup for rows and columns
 				dx <= dxmin;
 				dy <= dymin;
@@ -303,7 +276,6 @@ begin
 				end //end case 0
 		
 			2: begin
-			
 				//setting up the diagonal checking cuonters
 				posdiagoffset <= posdiagoffset_min;
 				negdiagoffset <= negdiagoffset_min;
@@ -312,25 +284,24 @@ begin
 				//the winchecker state in main controller will be at most composed of two stages
 			
 				//row checking
-				if (xcounter == 4 & prevTurn == 2'b01) begin
+				if (xcounter == 4 && prevTurn == 2'b01) begin
 					scoreTrig <= scoreTrig + 1;
-					checker_st <= 4;
-				end else if (xcounter == 4 && prevTurn == 2'b10) begin 
+					game_st <= rst_st;
+				end else if (xcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
-					checker_st <= 4;
+					game_st <= rst_st;
 				end else if(dx > dxmax) begin
-					xcounter <= 0;
 					game_st <= parse_inp_st;
 					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
 					prevTurn[1] = ~prevTurn[1];
+					checker_st <= 0;
 				end else if(board[y*10 + x + dx] == prevTurn) begin
 					dx <= dx + 1;
-					xcounter <= xcounter + 1;	
-				end else begin
+					xcounter <= xcounter + 1;	 
+				end else if (board[y*10 + x + dx] != prevTurn)  begin
 					dx <= dx + 1;
 					xcounter <= 0;
 				end
-			
 				//column checking
 //				if (ycounter == 4 && prevTurn == 2'b01) begin
 //					scoreTrig <= scoreTrig + 1;
@@ -409,7 +380,34 @@ begin
 	end //end win_chck_st
 	
 	
+	rst_st: begin
 	
+				if(rstCounter == rstParam) begin
+					rstCounter <= 0;
+					movCounter <= 0;
+					i3 = 0;
+					j3 = 0;
+					bookKeeperrst = 0;
+					
+					game_st <= parse_inp_st;
+					
+					for(bookKeeperrst = 0; bookKeeperrst <= 25; bookKeeperrst = bookKeeperrst + 1) begin
+						bookKeeper[bookKeeperrst] = 0;
+					end
+					for(i3 = 0; i3 <= 9; i3 = i3 + 1)
+					begin
+						for(j3 = 0; j3 <= 9; j3 = j3 + 1)
+						begin
+							board[i3*10+j3] = 2'b00;
+						end
+					end
+				end else begin
+					rstCounter <= rstCounter + 1;
+				end
+				
+				
+				end//end case
+		default: game_st <= parse_inp_st;
 	endcase
 	end //end the always blocks 
 

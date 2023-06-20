@@ -60,7 +60,7 @@ module rgbSelector #(
 					2'b00:	rgb_reg <= empty_mem[32 * y_reg + x_reg];
 					2'b01:	rgb_reg <= tri_mem[32 * y_reg + x_reg];
 					2'b10:	rgb_reg <= circle_mem[32 * y_reg + x_reg];
-					2'b11:	rgb_reg <= 3'b000;
+					2'b11:	rgb_reg <= 3'b100;
 				endcase
 			end
 		end	
