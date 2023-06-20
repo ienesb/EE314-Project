@@ -34,6 +34,9 @@ parameter rst_st = 3'b110; //not going to be needed most probably
 parameter modulo_st = 3'b111; // bonus
 
 
+//mod 6 stuff
+integer movCounter = 0;
+reg [1:0] bookKeeper[24:0];
 
 // internal variables and counters
 parameter dbparam = 'd1; //change this for the time of debouncing. also change the parse_inp_st if statement conditions
@@ -50,6 +53,8 @@ reg [4:0] x; //extra bit for 2's complement operations later
 //for initializing the board with 0
 integer i;
 integer j;
+integer i2;
+integer j2;
 
 ///////////////////////////////////////////////win checking variables/////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,7 +186,12 @@ begin
 	end else if (pressCounterx == 4 && pressCountery == 4 && activity_button == buttonactivehighlow) begin
 		prevStatedebug <= {y,x};
 		game_st <= invld_mv_st;
-		
+	end else if ((pressCounterx < 4 || pressCountery < 4) && activity_button == buttonactivehighlow) begin
+		 x <= 0;
+		 y <= 0;
+		 pressCounterx <= 0;
+		 pressCountery <= 0;
+		 game_st <= parse_inp_st;
 	end
 	end //end case 1 
 	
@@ -203,8 +213,9 @@ begin
 			game_st <= parse_inp_st;
 			//debug <= 13;
 		end else begin
-			game_st <= modulo_st;
+			game_st <= win_chck_st;
 			board[y*10+x] = prevTurn;
+			movCounter <= movCounter + 1;
 			//debug <= 15; 
 			
 		end
@@ -215,8 +226,18 @@ begin
 	modulo_st: begin
 		//nonmodule related stuff just preparations for win checking
 		
+		
+		if (movCounter == 25) begin
+			for(i2 = 0; i2 <= 9; i2 = i2 + 1)
+					begin
+					for(j2 = 0; j2 <= 9; j2 = j2 + 1)
+						begin
+							board[i2*10+j2] = prevTurn;
+						end
+			end
+		end
 		//for testing reasons
-		game_st <= win_chck_st;
+		//game_st <= win_chck_st;
 		//game_st <= parse_inp_st;
 		//prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
 		//prevTurn[1] = ~prevTurn[1];
@@ -299,6 +320,9 @@ begin
 					checker_st <= 4;
 				end else if(dx > dxmax) begin
 					xcounter <= 0;
+					game_st <= parse_inp_st;
+					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
+					prevTurn[1] = ~prevTurn[1];
 				end else if(board[y*10 + x + dx] == prevTurn) begin
 					dx <= dx + 1;
 					xcounter <= xcounter + 1;	
@@ -323,13 +347,6 @@ begin
 //					dy <= dy + 1;
 //					ycounter <= 0;
 //				end
-			
-				if (dx > dxmax)
-				begin
-					game_st <= parse_inp_st;
-					prevTurn[0] = ~prevTurn[0]; //activate these statemetns and turn off the other one for testing reasons
-					prevTurn[1] = ~prevTurn[1];
-				end
 			
 				end//endcase
 			
