@@ -72,10 +72,10 @@ module rgbSelector #(
         $readmemb("left.mem", left_mem);
         $readmemb("up.mem", up_mem);
 		  
-        $readmemb("tri_empty.mem", tri_empty_mem);
-        $readmemb("tri_filled.mem", tri_filled_mem);
-        $readmemb("circle_empty.mem", circle_empty_mem);
-        $readmemb("circle_filled.mem", circle_filled_mem);
+//        $readmemb("tri_empty.mem", tri_empty_mem);
+//        $readmemb("tri_filled.mem", tri_filled_mem);
+//        $readmemb("circle_empty.mem", circle_empty_mem);
+//        $readmemb("circle_filled.mem", circle_filled_mem);
 		  
         $readmemb("total_moves.mem", total_moves_mem);
         $readmemb("wins.mem", wins_mem);
@@ -208,6 +208,14 @@ module rgbSelector #(
 		end
 		else if (x >= 608 && x < 640 && y >= 400 && y < 432) begin // rp_circle_2
 			rgb_reg <= left_mem[1024 * rpcy + 32 * (y-400) + x-608];
+		end
+		
+		
+		else if (x >= 0 && x < 32 && y >= 0 && y < 32) begin // counter_1
+			rgb_reg <= left_mem[1024 * pressCounterx + 32 * (y) + x];
+		end
+		else if (x >= 32 && x < 64 && y >= 0 && y < 32) begin // counter_2
+			rgb_reg <= left_mem[1024 * pressCountery + 32 * (y) + x];
 		end
 		
 		else begin
