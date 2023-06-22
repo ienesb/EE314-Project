@@ -15,6 +15,8 @@ module rgbSelector #(
 	 input winCondition,
 	 input [3:0] movTrig,
 	 input [3:0] movCirc,
+	 input [3:0] pressCounterx,
+	 input [3:0] pressCountery,
     output [2:0] rgb,
 	 output reg [6:0] addr
 );
@@ -48,10 +50,9 @@ module rgbSelector #(
 	 reg [4:0] x_reg; 
 	 reg [4:0] y_reg;
 	 
-	 reg [4:0] win_x_1 = 0;
-	 reg [4:0] win_y_1 = 0;
-	 reg [4:0] win_x_2 = 3;
-	 reg [4:0] win_y_2 = 0;
+	 reg [1:0] slope;
+	 reg [3:0] endpoint_x;
+	 reg [3:0] endpoint_y;
 	 	 
     initial begin 
         $readmemb("tri.mem", tri_mem);
@@ -88,12 +89,23 @@ module rgbSelector #(
 			end
 			else begin
 				read <= 0;
-				case(board_data_in)
-					2'b00:	rgb_reg <= empty_mem[32 * y_reg + x_reg];
-					2'b01:	rgb_reg <= tri_mem[32 * y_reg + x_reg];
-					2'b10:	rgb_reg <= circle_mem[32 * y_reg + x_reg];
-					2'b11:	rgb_reg <= 3'b100;
-				endcase
+				if (winCondition == 1) begin
+					case(slope)
+						2'b00: begin 
+							if (x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+29) && y >= (endpoint_y*32+35)) begin
+								rgb_reg <= 'b100;
+							end
+						end
+					endcase
+				end 
+				else begin
+					case(board_data_in)
+						2'b00:	rgb_reg <= empty_mem[32 * y_reg + x_reg];
+						2'b01:	rgb_reg <= tri_mem[32 * y_reg + x_reg];
+						2'b10:	rgb_reg <= circle_mem[32 * y_reg + x_reg];
+						2'b11:	rgb_reg <= 3'b100;
+					endcase
+				end
 			end
 		end
 		else if (x >= 144 && x < 176 && y >= 32 && y < 352) begin // left
@@ -167,6 +179,13 @@ module rgbSelector #(
 		end
 		else if (x >= 608 && x < 640 && y >= 368 && y < 400) begin // rp_tri_2
 			rgb_reg <= left_mem[1024 * rpy + 32 * (y-368) + x-608];
+		end
+		
+		else if (x >= 576 && x < 608 && y >= 400 && y < 432) begin // rp_circle_1
+			rgb_reg <= left_mem[1024 * pressCounterx + 32 * (y-400) + x-576];
+		end
+		else if (x >= 608 && x < 640 && y >= 400 && y < 432) begin // rp_circle_2
+			rgb_reg <= left_mem[1024 * pressCountery + 32 * (y-400) + x-608];
 		end
 		
 		else begin

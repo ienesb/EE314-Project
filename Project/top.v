@@ -48,6 +48,10 @@ module top(
 	 wire [1:0] turn;
 	 wire [3:0] movTrig;
 	 wire [3:0] movCirc;
+	 
+	 wire [3:0] pressCounterxOut;
+	 wire [3:0] pressCounteryOut;
+	 
 	 wire winCondition;
 	 
     
@@ -70,6 +74,8 @@ module top(
 									 winCondition, 
 									 movTrig, 
 									 movCirc, 
+									 pressCounterxOut,
+									 pressCounteryOut,
 									 rgb, 
 									 addr);
 	 
@@ -86,6 +92,8 @@ module top(
 					 scoreCircOut, //scoreCirc
 					 scoreTrigOut, // scoreTrig
 					 turn,
+					 pressCounterxOut,
+					 pressCounteryOut,
 					 winCondition,
 					 movTrig,
 					 movCirc);

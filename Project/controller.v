@@ -10,6 +10,8 @@ module controller(
 						output [4:0] scoreCircOut, //scoreCirc
 						output [4:0] scoreTrigOut, // scoreTrig
 						output [1:0] currentTurn, //prevTurn
+						output [3:0] pressCounterxOut,
+						output [3:0] pressCounteryOut,
 						output reg winCondition,
 						output reg [3:0] movTrig,
 						output reg [3:0] movCirc,
@@ -48,8 +50,8 @@ parameter buttonactivehighlow = 1; //set as 0 for active low behavior
 // internal variables and counters
 integer movCounter = 0; //counts the number of total moves played
 reg [31:0] rstCounter = 0; // counts the second for resetting
-integer pressCounterx = 0; //counts the number of inputed x and y bits
-integer pressCountery = 0;
+reg [3:0] pressCounterx = 0; //counts the number of inputed x and y bits
+reg [3:0] pressCountery = 0;
 integer bookKeeperrst = 0;
 
 //for initializing the board with some values
@@ -152,9 +154,9 @@ begin
 	end else if (logic_1_button == buttonactivehighlow && pressCountery <= 3) begin
 		y[pressCountery] <= 1'b1; 
 		pressCountery <= pressCountery + 'd1;
-	end else if (logic_0_button == buttonactivehighlow  && ((pressCountery == 'd4) && pressCounterx <= 3)) begin 
+	end else if ((logic_0_button == buttonactivehighlow)  && ((pressCountery == 'd4) && pressCounterx <= 3)) begin 
 		x[pressCounterx] <= 1'b0; 
-		pressCounterx <= pressCounterx + 1;
+		pressCounterx <= pressCounterx + 'd1;
 	end else if ( (logic_1_button == buttonactivehighlow) && ((pressCountery == 'd4) && (pressCounterx <= 3)) ) begin 
 		x[pressCounterx] <= 1'b1; 
 		pressCounterx <= pressCounterx + 'd1;
@@ -455,6 +457,9 @@ begin
 	assign scoreCircOut = scoreCirc[4:0];
 	assign scoreTrigOut = scoreTrig[4:0];
 	assign currentTurn = prevTurn;
+	
+	assign pressCounterxOut = pressCounterx;
+	assign pressCounteryOut = pressCountery;
 	
 endmodule
 
