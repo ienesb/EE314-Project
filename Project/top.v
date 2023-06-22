@@ -52,7 +52,16 @@ module top(
 	 wire [3:0] pressCounterxOut;
 	 wire [3:0] pressCounteryOut;
 	 
+	 wire [2:0] st_out;
+	 wire debugOut;
+	 
 	 wire winCondition;
+	 
+	 wire [1:0] slope;
+	 wire [6:0] lastMovx;
+	 wire [6:0] lastMovy;
+	 wire recentMovflag;
+	 wire bonus1;
 	 
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
@@ -76,6 +85,11 @@ module top(
 									 movCirc, 
 									 pressCounterxOut,
 									 pressCounteryOut,
+									 st_out,
+									 debugOut,
+									 slope,
+									 lastMovx,
+									 lastMovy,
 									 rgb, 
 									 addr);
 	 
@@ -94,9 +108,16 @@ module top(
 					 turn,
 					 pressCounterxOut,
 					 pressCounteryOut,
+					 st_out,
+					 debugOut,
 					 winCondition,
 					 movTrig,
-					 movCirc);
+					 movCirc,
+					 slope,
+					 lastMovx,
+					 lastMovy,
+					 recentMovflag,
+					 bonus1);
     
 	 vgaDecoder vd(rgb, vga);
 	 	 

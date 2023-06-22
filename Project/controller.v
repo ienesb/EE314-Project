@@ -12,11 +12,16 @@ module controller(
 						output [1:0] currentTurn, //prevTurn
 						output [3:0] pressCounterxOut,
 						output [3:0] pressCounteryOut,
+						output [2:0] st_out,
+						output debugOut,
 						output reg winCondition,
 						output reg [3:0] movTrig,
 						output reg [3:0] movCirc,
 						output reg [1:0] slope,
-						output reg [6:0] lastMov
+						output reg [6:0] lastMovx,
+						output reg [6:0] lastMovy,
+						output reg recentMovflag,
+						output reg bonus1
  						);
 
 //////////////////////////////////////start of variable declarations////////////////////////////////////////////////////
@@ -41,7 +46,7 @@ parameter modulo_st = 3'b011;
 parameter rst_st = 3'b111; 
  
 //other parameters
-parameter rstParam = 'd1_0000_0000; //number of seconds * 10mill
+parameter rstParam = 'd2_0000_0000; //number of seconds * 10mill
 parameter movParam = 25;				// max number of moves
 parameter buttonactivehighlow = 1; //set as 0 for active low behavior
 
@@ -296,13 +301,15 @@ begin
 					game_st <= rst_st;
 					winCondition <= 1;
 					slope <= 'b00;
-					lastMov <= bookKeeper[y*10+ x + dx - 1];
+					lastMovx <= x + dx - 1;
+					lastMovy <= y;
 				end else if (xcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
 					slope <= 'b00;
-					lastMov <= bookKeeper[y*10+ x + dx - 1];
+					lastMovx <= x + dx - 1;
+					lastMovy <= y;
 				end else if(dx > dxmax) begin
 					xcounter <= 0;
 					checker_st <= 3;
@@ -323,13 +330,15 @@ begin
 					game_st <= rst_st;
 					winCondition <= 1;
 					slope <= 'b11;
-					lastMov <= bookKeeper[(y + dy - 1)*10 + x];
+					lastMovy <= y + dy - 1;
+					lastMovx <= x;
 				end else if (ycounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
 					slope <= 'b11;
-					lastMov <= bookKeeper[(y + dy - 1)*10 + x];
+					lastMovy <= y + dy - 1;
+					lastMovx <= x;
 				end else if(dy > dymax) begin
 					ycounter <= 0;
 					checker_st <= 4;
@@ -349,13 +358,15 @@ begin
 					game_st <= rst_st;
 					winCondition <= 1;
 					slope <= 'b01;
-					lastMov <= bookKeeper[(y + posdiagoffset - 1)*10+ x + posdiagoffset - 1];
+					lastMovy <= (y + posdiagoffset - 1);
+					lastMovx <= x + posdiagoffset - 1;
 				end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
 					slope <= 'b01;
-					lastMov <= bookKeeper[(y + posdiagoffset - 1)*10+ x + posdiagoffset - 1];
+					lastMovy <= (y + posdiagoffset - 1);
+					lastMovx <= x + posdiagoffset - 1;
 				end else if(posdiagoffset > posdiagoffset_max) begin 
 					posdiagcounter <= 0; 
 					checker_st <= 5;
@@ -376,13 +387,15 @@ begin
 					game_st <= rst_st;
 					winCondition <= 1;
 					slope <= 'b10;	
-					lastMov <= bookKeeper[(y - negdiagoffset + 1)*10 + x + negdiagoffset - 1]];
+					lastMovy <= (y - negdiagoffset + 1);
+					lastMovx <= x + negdiagoffset - 1;
 				end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
-					slope <= 'b10
-					lastMov <= bookKeeper[(y - negdiagoffset + 1)*10 + x + negdiagoffset - 1]];
+					slope <= 'b10;
+					lastMovy <= (y - negdiagoffset + 1);
+					lastMovx <= x + negdiagoffset - 1;
 				end else if(negdiagoffset > negdiagoffset_max) begin 
 					negdiagcounter <= 0;
 					checker_st <= 0;
@@ -460,6 +473,9 @@ begin
 	
 	assign pressCounterxOut = pressCounterx;
 	assign pressCounteryOut = pressCountery;
+	
+	assign st_out = game_st;
+	assign debugOut = logic_0_button;
 	
 endmodule
 

@@ -17,6 +17,11 @@ module rgbSelector #(
 	 input [3:0] movCirc,
 	 input [3:0] pressCounterx,
 	 input [3:0] pressCountery,
+	 input [3:0] st,
+	 input debugOut,
+	 input [1:0] slope,
+	 input [6:0] endpoint_x,
+	 input [6:0] endpoint_y,
     output [2:0] rgb,
 	 output reg [6:0] addr
 );
@@ -50,9 +55,9 @@ module rgbSelector #(
 	 reg [4:0] x_reg; 
 	 reg [4:0] y_reg;
 	 
-	 reg [1:0] slope;
-	 reg [3:0] endpoint_x;
-	 reg [3:0] endpoint_y;
+//	 reg [1:0] slope = 'b01;
+//	 reg [3:0] endpoint_x = 5;
+//	 reg [3:0] endpoint_y = 5;
 	 	 
     initial begin 
         $readmemb("tri.mem", tri_mem);
@@ -62,17 +67,17 @@ module rgbSelector #(
         $readmemb("left.mem", left_mem);
         $readmemb("up.mem", up_mem);
 		  
-        // $readmemb("tri_empty.mem", tri_empty_mem);
+        $readmemb("tri_empty.mem", tri_empty_mem);
         $readmemb("tri_filled.mem", tri_filled_mem);
-        // $readmemb("circle_empty.mem", circle_empty_mem);
+        $readmemb("circle_empty.mem", circle_empty_mem);
         $readmemb("circle_filled.mem", circle_filled_mem);
 		  
         $readmemb("total_moves.mem", total_moves_mem);
         $readmemb("wins.mem", wins_mem);
         $readmemb("recent_position.mem", recent_position_mem);
 		  
-        // $readmemb("triangle_turn.mem", tri_turn_mem);
-        // $readmemb("circle_turn.mem", circle_turn_mem);
+        $readmemb("triangle_turn.mem", tri_turn_mem);
+        $readmemb("circle_turn.mem", circle_turn_mem);
 		  
         $readmemb("winner_1.mem", winner_tri_mem);
         $readmemb("winner_2.mem", winner_circle_mem);
@@ -89,14 +94,17 @@ module rgbSelector #(
 			end
 			else begin
 				read <= 0;
-				if (winCondition == 1) begin
-					case(slope)
-						2'b00: begin 
-							if (x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+29) && y >= (endpoint_y*32+35)) begin
-								rgb_reg <= 'b100;
-							end
-						end
-					endcase
+				if (winCondition == 1 && slope == 'b00 && x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+51) && y >= (endpoint_y*32+45)) begin
+					rgb_reg <= 'b100;
+				end 
+				else if (winCondition == 1 && slope == 'b11 && x <= (endpoint_x*32+205) && x >= (endpoint_x*32+189) && y <= (endpoint_y*32+51) && y >= (endpoint_y*32-51)) begin
+					rgb_reg <= 'b100;
+				end 
+				else if (winCondition == 1 && slope == 'b10 && x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+144) && y >= (endpoint_y*32+48) && (x+y-endpoint_x*32-endpoint_y*32 == 240)) begin
+					rgb_reg <= 'b100;
+				end 
+				else if (winCondition == 1 && slope == 'b01 && x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+48) && y >= (endpoint_y*32-48) && (x-y-endpoint_x*32+endpoint_y*32 == 144)) begin
+					rgb_reg <= 'b100;
 				end 
 				else begin
 					case(board_data_in)
@@ -168,10 +176,11 @@ module rgbSelector #(
 			rgb_reg <= left_mem[1024 * (movTrig%10) + 32 * (y-368) + x-208];
 		end
 		else if (x >= 176 && x < 208 && y >= 400 && y < 432) begin // mov_circle_1
-			rgb_reg <= left_mem[1024 * (movCirc/10) + 32 * (y-400) + x-176];
+			rgb_reg <= left_mem[1024 * debugOut + 32 * (y-400) + x-176];
 		end
 		else if (x >= 208 && x < 240 && y >= 400 && y < 432) begin // mov_circle_2
-			rgb_reg <= left_mem[1024 * (movCirc%10) + 32 * (y-400) + x-208];
+			// rgb_reg <= left_mem[1024 * (movCirc%10) + 32 * (y-400) + x-208];
+			rgb_reg <= left_mem[1024 * st + 32 * (y-400) + x-208];
 		end
 		
 		else if (x >= 576 && x < 608 && y >= 368 && y < 400) begin // rp_tri_1
