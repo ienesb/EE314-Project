@@ -173,6 +173,9 @@ begin
 		// reset the counters for future use
 		pressCounterx <= 0;
 		pressCountery <= 0;
+		x[4] = 'b0;
+		y[4] = 'b0;
+		
 		
 		//if input is greater than 10 or if there is already an object in place input another location
 		if (y >= 10 || x >= 10) begin
@@ -184,6 +187,12 @@ begin
 			board[y*10+x] = prevTurn; // prevTurn = currentTurn
 			bookKeeper[movCounter] = y*10+x;
 			movCounter <= movCounter + 1; 
+			if (prevTurn == 'b01) begin
+				movTrig <= movTrig + 1;
+			end
+			else if (prevTurn == 'b10) begin
+				movCirc <= movCirc + 1;
+			end
 		end
 		
 	end //end invld_mv_st
@@ -386,6 +395,8 @@ begin
 					i3 = 0;
 					j3 = 0;
 					bookKeeperrst = 0;
+					movTrig <= 0;
+					movCirc <= 0;
 					
 					//reinitialize the game
 					game_st <= parse_inp_st;

@@ -5,17 +5,24 @@ import sys
 #name = "tri"
 #name = "circle"
 #name = "empty"
-#name = "top"
-#name = "left"
+
+#name = "up"
+name = "left"
 
 #name = "tri_empty"
 #name = "tri_filled"
 #name = "circle_empty"
 #name = "circle_filled"
 
-#name = "total_moves"
+name = "total_moves"
 #name = "wins"
-name = "recent_position"
+#name = "recent_position"
+
+#name = "circle_turn"
+#name = "triangle_turn"
+
+#name = "winner_1"
+#name = "winner_2"
 
 img = cv2.imread(f"{name}.png", 1)
 

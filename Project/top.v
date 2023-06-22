@@ -46,7 +46,9 @@ module top(
 	 wire [4:0] scoreCircOut;
 	 wire [4:0] scoreTrigOut;
 	 wire [1:0] turn;
-	 wire [1:0] winCondition;
+	 wire [3:0] movTrig;
+	 wire [3:0] movCirc;
+	 wire winCondition;
 	 
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
@@ -56,7 +58,20 @@ module top(
 	 assign frameX = (H_Count_Value < 784 && H_Count_Value > 143 && V_Count_Value < 515 && V_Count_Value > 34) ? (H_Count_Value - 144): 16'b0000000000000000;
     assign frameY = (H_Count_Value < 784 && H_Count_Value > 143 && V_Count_Value < 515 && V_Count_Value > 34) ? (V_Count_Value - 35): 16'b0000000000000000;
     
-	 rgbSelector rgbs(CLOCK_50, frameX, frameY, q_a, turn, rgb, addr);
+	 rgbSelector rgbs(CLOCK_50, 
+									 frameX, 
+									 frameY, 
+									 q_a, 
+									 turn, 
+									 scoreTrigOut, 
+									 scoreCircOut, 
+									 xout, 
+									 yout, 
+									 winCondition, 
+									 movTrig, 
+									 movCirc, 
+									 rgb, 
+									 addr);
 	 
 	 button_top bt(CLOCK_50, logic_0_button, logic_1_button, activity_button, logic0, logic1, activity); 
 	 
@@ -71,7 +86,9 @@ module top(
 					 scoreCircOut, //scoreCirc
 					 scoreTrigOut, // scoreTrig
 					 turn,
-					 winCondition);
+					 winCondition,
+					 movTrig,
+					 movCirc);
     
 	 vgaDecoder vd(rgb, vga);
 	 	 
