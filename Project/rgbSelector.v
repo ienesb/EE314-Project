@@ -190,11 +190,10 @@ module rgbSelector #(
 			rgb_reg <= left_mem[1024 * (movTrig%10) + 32 * (y-368) + x-208];
 		end
 		else if (x >= 176 && x < 208 && y >= 400 && y < 432) begin // mov_circle_1
-			rgb_reg <= left_mem[1024 * debugOut + 32 * (y-400) + x-176];
+			rgb_reg <= left_mem[1024 * (movCirc/10) + 32 * (y-400) + x-176];
 		end
 		else if (x >= 208 && x < 240 && y >= 400 && y < 432) begin // mov_circle_2
-			// rgb_reg <= left_mem[1024 * (movCirc%10) + 32 * (y-400) + x-208];
-			rgb_reg <= left_mem[1024 * st + 32 * (y-400) + x-208];
+			rgb_reg <= left_mem[1024 * (movCirc%10) + 32 * (y-400) + x-208];
 		end
 		
 		else if (x >= 576 && x < 608 && y >= 368 && y < 400) begin // rp_tri_1

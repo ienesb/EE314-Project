@@ -71,6 +71,9 @@ module top(
 	 
 	 wire drawCon;
 	 wire error;
+	 
+	 wire [3:0] xpre;
+	 wire [3:0] ypre;
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
     horizontal_counter VGA_Horiz(clk_25_MHz, enable_V_Counter, H_Count_Value);
@@ -137,6 +140,8 @@ module top(
 					 rpty,
 					 rpcx,
 					 rpcy,
+					 xpre,
+					 ypre,
  					 drawCon,
 					 error);
     

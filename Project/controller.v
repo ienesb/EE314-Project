@@ -55,7 +55,7 @@ parameter modulo_st = 3'b011;
 parameter rst_st = 3'b111; 
  
 //other parameters
-parameter rstParam = 'd2_0000_0000; //number of seconds * 10mill
+parameter rstParam = 'd50_0000_0000; //number of seconds * 10mill
 parameter movParam = 25;				// max number of moves
 parameter buttonactivehighlow = 1; //set as 0 for active low behavior
 
@@ -452,7 +452,7 @@ begin
 	
 				if(rstCounter == rstParam) begin
 					//counter and condition reseting
-			
+					drawCon <= 0;
 					winCondition <= 0;
 					rstCounter <= 0;
 					movCounter <= 0;
@@ -481,6 +481,7 @@ begin
 					end
 					end else begin
 						rstCounter <= rstCounter + 1;
+						drawCon <= 1;
 					end
 				
 				end//end case
