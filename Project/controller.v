@@ -12,7 +12,9 @@ module controller(
 						output [1:0] currentTurn, //prevTurn
 						output reg winCondition,
 						output reg [3:0] movTrig,
-						output reg [3:0] movCirc
+						output reg [3:0] movCirc,
+						output reg [1:0] slope,
+						output reg [6:0] lastMov
  						);
 
 //////////////////////////////////////start of variable declarations////////////////////////////////////////////////////
@@ -291,10 +293,14 @@ begin
 					scoreTrig <= scoreTrig + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
+					slope <= 'b00;
+					lastMov <= bookKeeper[y*10+ x + dx - 1];
 				end else if (xcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
+					slope <= 'b00;
+					lastMov <= bookKeeper[y*10+ x + dx - 1];
 				end else if(dx > dxmax) begin
 					xcounter <= 0;
 					checker_st <= 3;
@@ -314,10 +320,14 @@ begin
 					scoreTrig <= scoreTrig + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
+					slope <= 'b11;
+					lastMov <= bookKeeper[(y + dy - 1)*10 + x];
 				end else if (ycounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
+					slope <= 'b11;
+					lastMov <= bookKeeper[(y + dy - 1)*10 + x];
 				end else if(dy > dymax) begin
 					ycounter <= 0;
 					checker_st <= 4;
@@ -336,10 +346,14 @@ begin
 					scoreTrig <= scoreTrig + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
+					slope <= 'b01;
+					lastMov <= bookKeeper[(y + posdiagoffset - 1)*10+ x + posdiagoffset - 1];
 				end else if (posdiagcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
+					slope <= 'b01;
+					lastMov <= bookKeeper[(y + posdiagoffset - 1)*10+ x + posdiagoffset - 1];
 				end else if(posdiagoffset > posdiagoffset_max) begin 
 					posdiagcounter <= 0; 
 					checker_st <= 5;
@@ -358,15 +372,23 @@ begin
 				if (negdiagcounter == 4 && prevTurn == 2'b01) begin
 					scoreTrig <= scoreTrig + 1;
 					game_st <= rst_st;
-					winCondition <= 1;	
+					winCondition <= 1;
+					slope <= 'b10;	
+					lastMov <= bookKeeper[(y - negdiagoffset + 1)*10 + x + negdiagoffset - 1]];
 				end else if (negdiagcounter == 4 && prevTurn == 2'b10) begin
 					scoreCirc <= scoreCirc + 1;
 					game_st <= rst_st;
 					winCondition <= 1;
+					slope <= 'b10
+					lastMov <= bookKeeper[(y - negdiagoffset + 1)*10 + x + negdiagoffset - 1]];
 				end else if(negdiagoffset > negdiagoffset_max) begin 
 					negdiagcounter <= 0;
 					checker_st <= 0;
 					game_st <= parse_inp_st;
+					pressCounterx <= 0;
+					pressCountery <= 0;
+					x <= 0;
+					y <= 0;
 					prevTurn[0] = ~prevTurn[0]; 
 					prevTurn[1] = ~prevTurn[1];
 				end else if(board[(y - negdiagoffset)*10 + x + negdiagoffset] == prevTurn) begin
