@@ -72,10 +72,10 @@ module rgbSelector #(
         $readmemb("left.mem", left_mem);
         $readmemb("up.mem", up_mem);
 		  
-//        $readmemb("tri_empty.mem", tri_empty_mem);
-//        $readmemb("tri_filled.mem", tri_filled_mem);
-//        $readmemb("circle_empty.mem", circle_empty_mem);
-//        $readmemb("circle_filled.mem", circle_filled_mem);
+        $readmemb("tri_empty.mem", tri_empty_mem);
+        $readmemb("tri_filled.mem", tri_filled_mem);
+        $readmemb("circle_empty.mem", circle_empty_mem);
+        $readmemb("circle_filled.mem", circle_filled_mem);
 		  
         $readmemb("total_moves.mem", total_moves_mem);
         $readmemb("wins.mem", wins_mem);
@@ -108,10 +108,10 @@ module rgbSelector #(
 				else if (winCondition == 1 && slope == 'b11 && x <= (endpoint_x*32+205) && x >= (endpoint_x*32+189) && y <= (endpoint_y*32+51) && y >= (endpoint_y*32-51)) begin
 					rgb_reg <= 'b100;
 				end 
-				else if (winCondition == 1 && slope == 'b10 && x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+144) && y >= (endpoint_y*32+48) && (x+y-endpoint_x*32-endpoint_y*32 == 240)) begin
+				else if (winCondition == 1 && slope == 'b10 && x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+144) && y >= (endpoint_y*32+48) && (x+y-endpoint_x*32-endpoint_y*32 >= 238) && (x+y-endpoint_x*32-endpoint_y*32 <= 242)) begin
 					rgb_reg <= 'b100;
 				end 
-				else if (winCondition == 1 && slope == 'b01 && x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+48) && y >= (endpoint_y*32-48) && (x-y-endpoint_x*32+endpoint_y*32 == 144)) begin
+				else if (winCondition == 1 && slope == 'b01 && x <= (endpoint_x*32+192) && x >= (endpoint_x*32+96) && y <= (endpoint_y*32+48) && y >= (endpoint_y*32-48) && (x-y-endpoint_x*32+endpoint_y*32 >= 142) && (x-y-endpoint_x*32+endpoint_y*32 <= 146)) begin
 					rgb_reg <= 'b100;
 				end 
 				else begin
