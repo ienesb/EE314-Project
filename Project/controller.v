@@ -55,7 +55,7 @@ parameter modulo_st = 3'b011;
 parameter rst_st = 3'b111; 
  
 //other parameters
-parameter rstParam = 'd50_0000_0000; //number of seconds * 10mill
+parameter rstParam = 'd50_0000_000; //number of seconds * 50mill
 parameter movParam = 25;				// max number of moves
 parameter buttonactivehighlow = 1; //set as 0 for active low behavior
 
@@ -153,21 +153,21 @@ begin
 	negdiagcounter <= 0;
 	posdiagcounter <= 0;
 	checker_st <= 0;
-	
-	if(firstMove == 1) begin
-	 prevTurn <= 'b01;
-	 firstMove <= 0;
+	//
+	if(movCounter == movParam) begin
+		movCounter <= movCounter + 1;
+		game_st <= modulo_st;
+		pressCounterx <= 0;
+		pressCountery <= 0;
 	end else if(activity_reset == 1) begin 
 		pressCounterx <= 0;
 		pressCountery <= 0;
 		x <= 0;
 		y <= 0;
 		game_st <= parse_inp_st;	
-	end else if (movCounter == movParam) begin
-		movCounter <= movCounter + 1;
-		game_st <= modulo_st;
-		pressCounterx <= 0;
-		pressCountery <= 0;
+	end else if (firstMove == 1) begin
+		prevTurn <= 'b01;
+		firstMove <= 0;
 	end else if(logic_0_button == buttonactivehighlow && pressCountery <= 3) begin
 		y[pressCountery] <= 1'b0; 
 		pressCountery <= pressCountery + 'd1;
@@ -243,19 +243,24 @@ begin
 								end
 			11: begin
 			    board[bookKeeper[0]] = 2'b11;
+				 game_st <= win_chck_st;
 				 end
 			12: begin
 				 board[bookKeeper[1]] = 2'b11;
+				 game_st <= win_chck_st;
 				 end
 			23: begin
 				 board[bookKeeper[2]] = 2'b11;
+				 game_st <= win_chck_st;
 				 end
 			24: begin
 				 board[bookKeeper[3]] = 2'b11;
+				 game_st <= win_chck_st;
 				 end
+			default: game_st <= win_chck_st;
 		endcase
 	
-		game_st <= win_chck_st;
+		
 		
 		end // end modulo_st
 	
