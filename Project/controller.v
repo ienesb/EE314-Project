@@ -22,7 +22,15 @@ module controller(
 						output reg [6:0] lastMovx,
 						output reg [6:0] lastMovy,
 						output reg recentMovflag,
-						output reg bonus1
+						output reg bonus1,
+						output reg [3:0] rptx,
+						output reg [3:0] rpty,
+						output reg [3:0] rpcx,
+						output reg [3:0] rpcy,
+						output reg [3:0] xpre,
+						output reg [3:0] ypre,
+						output reg drawCon,
+						output reg error
  						);
 
 //////////////////////////////////////start of variable declarations////////////////////////////////////////////////////
@@ -139,7 +147,7 @@ begin
 	//when have entered 4 digits we start inputting the x coordintate(check the if statement condition)
 	
 	parse_inp_st: begin
-	
+
 	xcounter <= 0;
 	ycounter <= 0;
 	negdiagcounter <= 0;
@@ -147,14 +155,14 @@ begin
 	checker_st <= 0;
 	
 	if(firstMove == 1) begin
-		prevTurn <= 'b01;
-		firstMove <= 0;
+	 prevTurn <= 'b01;
+	 firstMove <= 0;
 	end else if(activity_reset == 1) begin 
 		pressCounterx <= 0;
 		pressCountery <= 0;
 		x <= 0;
 		y <= 0;
-		game_st <= parse_inp_st;
+		game_st <= parse_inp_st;	
 	end else if (movCounter == movParam) begin
 		movCounter <= movCounter + 1;
 		game_st <= modulo_st;
@@ -174,6 +182,9 @@ begin
 		pressCounterx <= pressCounterx + 'd1;
 	end else if (pressCounterx == 4 && pressCountery == 4 && activity_button == buttonactivehighlow) begin
 		game_st <= invld_mv_st;
+		xpre <= x;
+		ypre <= y;
+		bonus1 <= 1;
 	end else if ((pressCounterx < 4 || pressCountery < 4) && activity_button == buttonactivehighlow) begin
 		pressCounterx <= 0;
 		pressCountery <= 0;
@@ -185,29 +196,38 @@ begin
 	
 	
 	invld_mv_st:begin
-			
+		
+		bonus1 <= 0;
 		// reset the counters for future use
 		pressCounterx <= 0;
 		pressCountery <= 0;
 		x[4] = 'b0;
 		y[4] = 'b0;
 		
-		
+		//if (ypre<10 && xpre<10 && bonus1 )
 		//if input is greater than 10 or if there is already an object in place input another location
 		if (y >= 10 || x >= 10) begin
 			game_st <= parse_inp_st;
+			error <= 1;
 		end else if (board[y*10+x][0] | board[y*10+x][1]) begin
 			game_st <= parse_inp_st;
+			error <= 1;
 		end else begin
+			error <= 0;
 			game_st <= modulo_st;
 			board[y*10+x] = prevTurn; // prevTurn = currentTurn
 			bookKeeper[movCounter] = y*10+x;
-			movCounter <= movCounter + 1; 
+			movCounter <= movCounter + 1;
+			recentMovflag <= 1;
 			if (prevTurn == 'b01) begin
 				movTrig <= movTrig + 1;
+				rptx <= x;
+				rpty <= y;
 			end
 			else if (prevTurn == 'b10) begin
 				movCirc <= movCirc + 1;
+				rpcx <= x;
+				rpcy <= y;
 			end
 		end
 		
@@ -215,7 +235,7 @@ begin
 	
 	
 	modulo_st: begin
-
+		recentMovflag <= 0;
 		case (movCounter)
 		
 			movParam + 1:  begin

@@ -64,6 +64,13 @@ module top(
 	 wire recentMovflag;
 	 wire bonus1;
 	 
+	 wire [3:0] rptx;
+	 wire [3:0] rpty;
+	 wire [3:0] rpcx;
+	 wire [3:0] rpcy;
+	 
+	 wire drawCon;
+	 wire error;
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
     horizontal_counter VGA_Horiz(clk_25_MHz, enable_V_Counter, H_Count_Value);
@@ -91,6 +98,12 @@ module top(
 									 slope,
 									 lastMovx,
 									 lastMovy,
+									 rptx,
+									 rpty,
+									 rpcx,
+									 rpcy,
+									 drawCon,
+									 error,
 									 rgb, 
 									 addr);
 	 
@@ -119,7 +132,13 @@ module top(
 					 lastMovx,
 					 lastMovy,
 					 recentMovflag,
-					 bonus1);
+					 bonus1,
+					 rptx,
+					 rpty,
+					 rpcx,
+					 rpcy,
+ 					 drawCon,
+					 error);
     
 	 vgaDecoder vd(rgb, vga);
 	 	 

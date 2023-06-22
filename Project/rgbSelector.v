@@ -22,6 +22,12 @@ module rgbSelector #(
 	 input [1:0] slope,
 	 input [6:0] endpoint_x,
 	 input [6:0] endpoint_y,
+	 input [3:0] rptx,
+	 input [3:0] rpty,
+	 input [3:0] rpcx,
+	 input [3:0] rpcy,
+	 input drawCon,
+	 input error,
     output [2:0] rgb,
 	 output reg [6:0] addr
 );
@@ -49,15 +55,14 @@ module rgbSelector #(
 	 reg [2:0] winner_tri_mem [20479:0];
 	 reg [2:0] winner_circle_mem [20479:0];
 	 
+	 reg [2:0] error_mem [20479:0];
+	 reg [2:0] draw_mem [20479:0];
+	 
 	 reg [2:0] rgb_reg;
 	 reg read = 0;
 	 
 	 reg [4:0] x_reg; 
 	 reg [4:0] y_reg;
-	 
-//	 reg [1:0] slope = 'b01;
-//	 reg [3:0] endpoint_x = 5;
-//	 reg [3:0] endpoint_y = 5;
 	 	 
     initial begin 
         $readmemb("tri.mem", tri_mem);
@@ -81,6 +86,9 @@ module rgbSelector #(
 		  
         $readmemb("winner_1.mem", winner_tri_mem);
         $readmemb("winner_2.mem", winner_circle_mem);
+		  
+        $readmemb("error_message.mem", error_mem);
+        $readmemb("draw.mem", draw_mem);
     end
 	always @(posedge clk) begin
 		
@@ -144,6 +152,12 @@ module rgbSelector #(
 					2'b10: rgb_reg <= winner_circle_mem[640 * (y-448) + x];
 				endcase
 			end
+			else if (error == 1)begin
+				rgb_reg <= error_mem[640 * (y-448) + x];
+			end
+			else if (drawCon == 1)begin
+				rgb_reg <= draw_mem[640 * (y-448) + x];
+			end
 			else begin
 				rgb_reg <= 'b111;
 			end
@@ -184,17 +198,17 @@ module rgbSelector #(
 		end
 		
 		else if (x >= 576 && x < 608 && y >= 368 && y < 400) begin // rp_tri_1
-			rgb_reg <= up_mem[32 * rpx + 320 * (y-368) + x-576];
+			rgb_reg <= up_mem[32 * rptx + 320 * (y-368) + x-576];
 		end
 		else if (x >= 608 && x < 640 && y >= 368 && y < 400) begin // rp_tri_2
-			rgb_reg <= left_mem[1024 * rpy + 32 * (y-368) + x-608];
+			rgb_reg <= left_mem[1024 * rpty + 32 * (y-368) + x-608];
 		end
 		
 		else if (x >= 576 && x < 608 && y >= 400 && y < 432) begin // rp_circle_1
-			rgb_reg <= left_mem[1024 * pressCounterx + 32 * (y-400) + x-576];
+			rgb_reg <= up_mem[32 * rpcx + 320 * (y-400) + x-576];
 		end
 		else if (x >= 608 && x < 640 && y >= 400 && y < 432) begin // rp_circle_2
-			rgb_reg <= left_mem[1024 * pressCountery + 32 * (y-400) + x-608];
+			rgb_reg <= left_mem[1024 * rpcy + 32 * (y-400) + x-608];
 		end
 		
 		else begin

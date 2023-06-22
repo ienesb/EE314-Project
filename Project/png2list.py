@@ -24,6 +24,9 @@ name = "total_moves"
 #name = "winner_1"
 #name = "winner_2"
 
+#name = "error_message"
+name = "draw"
+
 img = cv2.imread(f"{name}.png", 1)
 
 #img = cv2.resize(img, (32,32))
