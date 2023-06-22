@@ -155,7 +155,7 @@ begin
 		x <= 0;
 		y <= 0;
 		game_st <= parse_inp_st;
-	else if (movCounter == movParam) begin
+	end else if (movCounter == movParam) begin
 		movCounter <= movCounter + 1;
 		game_st <= modulo_st;
 		pressCounterx <= 0;
