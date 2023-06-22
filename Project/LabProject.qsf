@@ -86,7 +86,6 @@ set_location_assignment PIN_D11 -to VGA_VS
 set_location_assignment PIN_AA14 -to logic_0_button
 set_location_assignment PIN_AA15 -to logic_1_button
 set_location_assignment PIN_W15 -to activity_button
-set_location_assignment PIN_V16 -to led
 set_global_assignment -name VERILOG_FILE timer_parameter.v
 set_global_assignment -name VERILOG_FILE edge_detector.v
 set_global_assignment -name VERILOG_FILE debouncer_delayed_fsm.v

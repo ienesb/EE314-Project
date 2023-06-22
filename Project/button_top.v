@@ -4,7 +4,7 @@ module button_top(
 	output logic0, logic1, activity,
 	output reg activity_reset
 ); 
-	parameter PUSH_TIME = 59_999;
+	parameter PUSH_TIME = 159_999_999;
 	integer button_timer;
 	integer count_enable;
 	
