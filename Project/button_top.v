@@ -2,18 +2,14 @@ module button_top(
 	input clk,
 	input logic0_button, logic1_button, activity_button,
 	output logic0, logic1, activity,
-	output reg activity_reset,
-	output [7:0] led
+	output reg activity_reset
 ); 
-	parameter PUSH_TIME = 149_999_999;
-	reg [7:0] led_out;
+	parameter PUSH_TIME = 59_999;
 	integer button_timer;
-	integer button_counter;
 	integer count_enable;
 	
 	initial begin 
-		led_out = 7'b00;
-		button_counter = 0;
+		count_enable = 0;
 		button_timer = 0; 
 	end  
 	
@@ -35,10 +31,6 @@ module button_top(
 	);
 	
 	always @(posedge clk) begin 
-		if (logic0 == 1 & logic1 == 1 & button_counter < 8) begin
-			led_out[button_counter] <= 'b1;
-			button_counter <= button_counter + 1;
-		end
 		if (act_n == 1) begin 
 			count_enable <= 1; 
 		end 
@@ -51,12 +43,9 @@ module button_top(
 		end 
 		if (button_timer == PUSH_TIME) begin
 			activity_reset <= 1;
-			led_out <= 7'b00;
-			button_counter <= 0;
 			button_timer <= 0;	
 		end else begin
 			activity_reset <= 0;
 		end
-		end
-		assign led[7:0] = led_out[7:0];	
+	end
 endmodule 

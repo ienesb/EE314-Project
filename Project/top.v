@@ -18,7 +18,7 @@ module top(
     parameter IMG_HEIGHT = 480;
         
     wire clk_25_MHz;
-	 wire clk_100_Hz;
+	 wire clk_10_kHz;
     reg [31:0] div_value = 0;
     reg [31:0] div_value2 = 2499;
     
@@ -78,7 +78,7 @@ module top(
 	 wire [3:0] ypre;
     
     clock_divider cd(CLOCK_50, div_value, clk_25_MHz);
-    clock_divider cd2(CLOCK_50, div_value2, clk_100_Hz);
+    clock_divider cd2(CLOCK_50, div_value2, clk_10_kHz);
     horizontal_counter VGA_Horiz(clk_25_MHz, enable_V_Counter, H_Count_Value);
     vertical_counter VGA_Verti(clk_25_MHz, enable_V_Counter, V_Count_Value);
     
@@ -113,9 +113,9 @@ module top(
 									 rgb, 
 									 addr);
 	 
-	 button_top bt(clk_100_Hz, logic_0_button, logic_1_button, activity_button, logic0, logic1, activity, activity_reset); 
+	 button_top bt(clk_10_kHz, logic_0_button, logic_1_button, activity_button, logic0, logic1, activity, activity_reset); 
 	 
-	 controller c(clk_100_Hz,
+	 controller c(clk_10_kHz,
 					 logic0,
 					 logic1,
 					 activity,
