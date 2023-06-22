@@ -39,6 +39,7 @@ module top(
  	 wire logic0;
 	 wire logic1;
 	 wire activity;
+	 wire activity_reset;
 	
 	 
 	 wire [4:0] xout;
@@ -93,12 +94,13 @@ module top(
 									 rgb, 
 									 addr);
 	 
-	 button_top bt(CLOCK_50, logic_0_button, logic_1_button, activity_button, logic0, logic1, activity); 
+	 button_top bt(CLOCK_50, logic_0_button, logic_1_button, activity_button, logic0, logic1, activity, activity_reset); 
 	 
 	 controller c(CLOCK_50,
 					 logic0,
 					 logic1,
 					 activity,
+					 activity_reset,
 					 addr,
 					 q_a,
 					 xout, //x

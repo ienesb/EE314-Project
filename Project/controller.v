@@ -3,6 +3,7 @@ module controller(
 						input logic_0_button,
 						input logic_1_button,
 						input activity_button,
+						input activity_reset,
 						input [6:0] addr,
 						output reg [1:0] q_a,
 						output [4:0] xout, //x
@@ -146,9 +147,15 @@ begin
 	checker_st <= 0;
 	
 	if(firstMove == 1) begin
-	 prevTurn <= 'b01;
-	 firstMove <= 0;
-	end else if (movCounter == movParam) begin
+		prevTurn <= 'b01;
+		firstMove <= 0;
+	end else if(activity_reset == 1) begin 
+		pressCounterx <= 0;
+		pressCountery <= 0;
+		x <= 0;
+		y <= 0;
+		game_st <= parse_inp_st;
+	else if (movCounter == movParam) begin
 		movCounter <= movCounter + 1;
 		game_st <= modulo_st;
 		pressCounterx <= 0;
