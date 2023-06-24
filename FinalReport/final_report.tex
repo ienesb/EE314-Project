@@ -21,15 +21,24 @@
     filecolor=black,
     linkcolor=black,
     urlcolor=black
-    pdftitle={EE313 Project Final Report}
+    pdftitle={EE314 Project Final Report}
 }
+
+\makeatletter % changes the catcode of @ to 11
+\newcommand{\linebreakand}{%
+  \end{@IEEEauthorhalign}
+  \hfill\mbox{}\par
+  \mbox{}\hfill\begin{@IEEEauthorhalign}
+}
+\makeatother % changes the catcode of @ back to 12
+
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 \begin{document}
 
-\title{EE 314 DIGITAL CIRCUITS LABORATORY 2022-2023 SPRING TERM PROJECT REPORT \\ {\large A SUBTITLE HERE}}
+\title{EE 314 DIGITAL CIRCUITS LABORATORY 2022-2023 SPRING TERM PROJECT REPORT \\ {\large FPGA IMPLEMANTATION OF A 2D STRATEGY GAME}}
 
 \author{\IEEEauthorblockN{Ahmet Caner Akar}
 \IEEEauthorblockA{\textit{Electrical and Electronics Engineering Department} \\
@@ -43,29 +52,29 @@ e244228@metu.edu.tr}
 Ankara, Turkey \\
 e248849@metu.edu.tr}
 \and
+\linebreakand
 \IEEEauthorblockN{İsmail Enes Bülbül}
 \IEEEauthorblockA{\textit{Electrical and Electronics Engineering Department} \\
 \textit{Middle East Technical University}\\
 Ankara, Turkey \\
 e244263@metu.edu.tr}
-\and
 }
 
 \maketitle
 
 \begin{abstract}
-This document is about the end-term project of EE314 Digital Circuits Laboratory \\
+This document is about the end-term project of EE314 Digital Circuits Laboratory, implementation of a 2D strategy game by using FPGA.  \\
 \end{abstract}
 
 \begin{IEEEkeywords}
-Optical wireless communication, freespace optical communication, Li-Fi, photophone, AGC, laser
+FPGA, Verilog, VGA driver, button debouncing, state-machine
 \end{IEEEkeywords} 
 
 \section{Introduction}
-\section{Section 1}
-\section{Section 2}
-\subsection{Subsection 1}
-\subsection{Subsection 1}
+\section{Project Overview}
+\subsection{VGA Module}
+\subsection{Button Debouncing Module}
+
 Example citation \cite{butterworth}
 \section{Conclusion}
 
