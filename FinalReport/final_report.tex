@@ -11,6 +11,7 @@
 \usepackage{svg}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage{tikz}
 \usepackage{url}
 \usepackage{graphicx}
 \usepackage{dblfloatfix}
@@ -117,6 +118,25 @@ In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0}
     \label{Fig. 1.}
 \end{figure} 
 \subsection{Game Controller}
+   \begin{center}
+   \begin{tikzpicture}[ - > , >= stealth, shorten >=2pt , line width =0.5 pt , node distance =2 cm]
+   \node [circle , draw] (parse) at (0 , 0) {parse input};
+   \node [circle , draw] (invalid) at (5 , -2) {invalid\_mv};
+   \node [circle , draw] (book) at (6 , -6) {book keper};
+   \node [circle , draw] (reset) at (0 , -4.5) {reset};
+   \node [circle , draw] (win) at (-2 , -7) {win check};
+  
+   \path (parse) edge [loop above] node [above] {input bits != 8} (parse) ;
+   \path (invalid) edge [bend right=50] node [right, xshift=0.1cm] {valid\_mv = 0} (parse) ;
+   \path (book) edge [bend left] node [below] {move counter != 25} (win) ;
+   \path (win) edge [bend left] node [left] {win = 0} (parse) ;
+   \path (win) edge node [right] {win = 1} (reset) ;
+   \path (parse) edge node [below, xshift=-0.5cm, yshift=-0.1cm] {input bits = 8} (invalid) ;
+   \path (book) edge node [below, yshift=-0.4cm] {move counter = 25} (reset) ;
+   \path (invalid) edge node [right] {valid\_mv = 1} (book) ;
+   \path (reset) edge node [above] {} (parse) ;
+   \end{tikzpicture}
+   \end{center}
 
 \section{Conclusion}
 
