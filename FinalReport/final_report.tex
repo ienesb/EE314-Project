@@ -73,10 +73,15 @@ FPGA, Verilog HDL, VGA driver, button debouncing, state-machine
 \section{Introduction}
 \section{Project Overview}
 \subsection{VGA Module}
-\subsection{Button Debouncing Module}
-In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0} and \textbf{activity}, from the user by using push buttons on the FPGA. However, due to mechanical and physical issues, pushbuttons often generate noisy signals called dirty bounces and these bounces preventing us to properly trigger the program. Thus, to eliminate these undesirable effects, we used debouncing module that makes a noisy pushbutton input signal to ideal case. \\
+\subsection{Button Debouncing and Edge Detector}
+In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0} and \textbf{activity}, from the user by using push buttons on the FPGA. However, due to mechanical and physical issues, pushbuttons often generate noisy signals called dirty bounces and these bounces preventing us to properly trigger the program. Thus, to eliminate these undesirable effects, we used debouncing module that makes a noisy pushbutton input signal to ideal input case. \\
 \par The working principle of the debouncing module is quite simple. When a button is pressed the timer is going to count the elapsed time up to a predefined threshold parameter. If the timer hits the threshold value, the program concludes that the button reaches its steady-state and it has been pressed. Similarly, when the button is released and the steady state is reached, the program concludes that the button has been released. \\
-\par 
+\par After debouncing button input signal, we designed another module called edge detector to detect the negative and positive edges of the debounced input so that we will use the edge signals directly as button signals in the game controller. \\
+\par The button module contains both debouncing module and edge detector module so that the hierarchical design principle is followed throughout the project. Also, both of these modules, are written like a state machine to make it easier to implement condition based and flexible code. The waveform simulation result of the button module in Quartus II is given in Figure 1, below. 
+ \begin{figure}[H]
+   \centerline{\includegraphics[scale=0.22]{simulation.png}}
+    \caption{Button module, waveform simulation result}
+\end{figure} 
 \subsection{Game Controller}
 
 Example citation \cite{butterworth}
