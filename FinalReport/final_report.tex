@@ -14,6 +14,7 @@
 \usepackage{tikz}
 \usepackage{url}
 \usepackage{graphicx}
+\usepackage[export]{adjustbox}
 \usepackage{dblfloatfix}
 
 \hypersetup{
@@ -75,11 +76,10 @@ FPGA, Verilog HDL, VGA driver, button debouncing, state-machine
 \section{Project Overview}
 \subsection{VGA Module}
 In this project, we are expected to use the VGA interface of the FPGA to display the game board and some information related to the game. 
-To do this, we decided to display the game with 640x480 resolution at 60 Hz. \cite{vga} The timing diagram is shown in the figure below.
+To do this, we decided to display the game with 640x480 resolution at 60 Hz. \cite{vga} The timing diagram is shown in Figure 1, below.
 \begin{figure}[H]
   \centerline{\includegraphics[scale=0.4]{vga.png}}
    \caption{Timing diagram for the VGA interface}
-   \label{Fig. 1.}
 \end{figure} 
 From the timing diagram, we can see that we need two counters namely a horizontal counter and a vertical counter.
 To drive counters we need a clock with 25 MHz frequency. 
@@ -100,21 +100,19 @@ If it is neither in the board region nor a picture or text region, then it retur
 After the \textit{rgbSelector} module returns RGB values with 1 bit for each channel, 
 another module we called \textit{vgaDecoder} converts it to output with 8 bits for each color channel and returns it to the DAC of the FPGA. \\
 \par When the counters are not in the display area, 0 is returned to the DAC of the FPGA. 
-An example of the display is shown in the figure below.  
+An example of the display is shown in Figure 2, below.  
 \begin{figure}[H]
-  \centerline{\includegraphics[scale=0.65]{sample_board.png}}
+  \centerline{\includegraphics[scale=0.65, frame]{sample_board.png}}
    \caption{Example of the display}
-   \label{Fig. 1.}
 \end{figure} 
 \subsection{Button Debouncing and Edge Detector}
 In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0}, and \textbf{activity}, from the user by using push buttons on the FPGA. However, due to mechanical and physical issues, pushbuttons often generate noisy signals called dirty bounces, and these bounces prevent us from properly triggering the program. Thus, to eliminate these undesirable effects, we used the \textit{debouncer\_delayed} module that makes a noisy pushbutton input signal to the ideal input case. \\
 \par The working principle of the \textit{debouncer\_delayed} module is quite simple. When a button is pressed, the timer is going to count the elapsed time up to a predefined threshold parameter. If the timer hits the threshold value, the program concludes that the button has reached its steady state and has been pressed. Similarly, when the button is released and the steady state is reached, the program concludes that the button has been released. \\
 \par After debouncing the button input, we designed another module called \textit{edge\_detector} to detect the negative and positive edges of the debounced input so that we will use the edge signals directly as button signals in the game controller. \\
-\par The \textit{button} module contains both \textit{debouncer\_delayed} and \textit{edge\_detector} modules so that the hierarchical design principle is followed throughout the project. Also, both of these modules, are written like a state machine to make it easier to implement condition-based and flexible code. The waveform simulation result of the \textit{button} module in Quartus II is given in Figure \ref{Fig. 1.}, below. Besides these, in the \textit{button\_top} module each button is defined separately in a hierarchical manner by using the \textit{button} module.
+\par The \textit{button} module contains both \textit{debouncer\_delayed} and \textit{edge\_detector} modules so that the hierarchical design principle is followed throughout the project. Also, both of these modules, are written like a state machine to make it easier to implement condition-based and flexible code. The waveform simulation result of the \textit{button} module in Quartus II is given in Figure 3. Besides these, in the \textit{button\_top} module each button is defined separately in a hierarchical manner by using the \textit{button} module.
  \begin{figure}[H]
    \centerline{\includegraphics[scale=0.22]{simulation.png}}
     \caption{Button module, waveform simulation result}
-    \label{Fig. 1.}
 \end{figure} 
 \subsection{Game Controller}
    \begin{center}
