@@ -40,7 +40,7 @@
 
 \begin{document}
 
-\title{EE 314 DIGITAL CIRCUITS LABORATORY 2022-2023 SPRING TERM PROJECT REPORT \\ {\large FPGA IMPLEMANTATION OF A 2D STRATEGY GAME}}
+\title{EE 314 DIGITAL CIRCUITS LABORATORY 2022-2023 SPRING TERM PROJECT REPORT \\ {\large FPGA IMPLEMENTATION OF A 2D STRATEGY GAME}}
 
 \author{\IEEEauthorblockN{Ahmet Caner Akar}
 \IEEEauthorblockA{\textit{Electrical and Electronics Engineering Department} \\
@@ -73,6 +73,8 @@ FPGA, Verilog HDL, VGA driver, button debouncing, state-machine
 \end{IEEEkeywords} 
 
 \section{Introduction}
+Turn-based strategy games have been popular among people of all ages for decades because they provide a demanding gaming experience while being simple to understand. Tic Tac Toe and Battleships are two examples of such games. In this project, we will implement such a game called ''Triangles vs. Circles'' in Verilog HDL by using ALtera DE1-SoC FPGA board. \\
+\par The aim of the project, 
 \section{Project Overview}
 \subsection{VGA Module}
 In this project, we are expected to use the VGA interface of the FPGA to display the game board and some information related to the game. 
@@ -114,12 +116,23 @@ In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0}
    \centerline{\includegraphics[scale=0.22]{simulation.png}}
     \caption{Button module, waveform simulation result}
 \end{figure} 
-\subsection{Game Controller}
-   \begin{center}
+\subsection{Game Engine}
+As shown in Figure 4, the game engine can be modeled as a state machine that consists of 5 separate states: an input processing state (parse\_inp), an invalid move checking state (invld\_mv), a bookkeeping state, a state that checks if a win condition is satisfied, and finally, a state that resets the game board with appropriate modifications to the scores. Before discussing the states any further, it is helpful to understand the general encoding scheme of the board and shapes. \\
+\subsubsection{Shape Encoding and Board Layout}
+\par  The shapes are encoded using 2 bits as follows:
+\begin{itemize}
+  \item Empty (no shape): 00
+  \item Triangle: 01
+  \item Circle: 10
+  \item Square: 11
+\end{itemize}
+\par Encoding the shapes in this way has several advantages. The first and most obvious is the ability to keep track of triangle and circle turns using a single variable -say currTurn- and if a player’s turn is over, the bits can simply be inverted to give the other player the ability to place their shape. The other advantages will be discussed in the relevant states in the report.
+   \begin{figure}
+   \centering \resizebox{8cm}{!}{
    \begin{tikzpicture}[ - > , >= stealth, shorten >=2pt , line width =0.5 pt , node distance =2 cm]
-   \node [circle , draw] (parse) at (0 , 0) {parse input};
-   \node [circle , draw] (invalid) at (5 , -2) {invalid\_mv};
-   \node [circle , draw] (book) at (6 , -6) {book keper};
+   \node [circle , draw] (parse) at (0 , 0) {parse\_inp};
+   \node [circle , draw] (invalid) at (5 , -2) {invld\_mv};
+   \node [circle , draw] (book) at (6 , -6) {book keeper};
    \node [circle , draw] (reset) at (0 , -4.5) {reset};
    \node [circle , draw] (win) at (-2 , -7) {win check};
   
@@ -132,9 +145,60 @@ In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0}
    \path (book) edge node [below, yshift=-0.4cm] {move counter = 25} (reset) ;
    \path (invalid) edge node [right] {valid\_mv = 1} (book) ;
    \path (reset) edge node [above] {} (parse) ;
-   \end{tikzpicture}
-   \end{center}
-
+   \end{tikzpicture}}
+   \caption{State machine of the game engine}
+   \end{figure}
+   \subsubsection{Input Parsing}
+   The input parsing state has the sole role of converting the binary input into x and y coordinates. This is done through the use of two counters – one for the y and the other for x. The counters allow for easy inversion of the order of the input bits and for checking whether the used has provided 8 bits or not. \\
+\subsubsection{Invalid Move Checking}
+If the activity button is pressed after the user has provided 8 bits, the state machine moves on to invld\_mv. In this state two main checks are performed: \begin{itemize} 
+\item The x and y coordinates specified by the user are within range, i.e., the coordinates are greater than or equal to zero and less than 10. This is done using simple if statements.
+\item The specified coordinate is empty. This can be done by taking the OR operator of the two bits of the encoding scheme specified above. Only an empty cell will give zero, if the state is occupied the result of the operator will be one.
+\end{itemize}
+\subsubsection{Bookkeping}
+The game board can be modeled as a 2-bit 100 cell wide memory block. A position is stored in the board as follows: \(y \cdot 10 + x\). In this encoding scheme, the y position is stored in the tens place while the x position is stored in the ones place. Furthermore, another array called bookkeeper is used to (as the name suggests) keep track of all player movements in sequential order. \\
+\par Since the bookkeeper keeps track of movement coordinates sequentially, erasing every sixth move becomes just a trivial task of accessing the bookkeeper array at the appropriate index, using the info retrieved from that array to write 11 to the board. \\
+\subsubsection{Win Checking Algorithm} 
+A win condition can be only created after the last move that is placed on the board. That is why, instead of checking the whole board we just check the area around the last move. To do that we define several offsets: dx, dy, positive diagonal offset, and negative diagonal offset used to check rows, columns, diagonals with positive slopes, and finally diagonals with negative slopes respectively. The slopes are defined with respect to the coordinate system shown in Figure 5.
+ \begin{figure}[H]
+   \centerline{\includegraphics[scale=0.6]{check.png}}
+    \caption{Button module, waveform simulation result}
+\end{figure} 
+The win checking state is itself a state machine with two distinct states: 
+\begin{itemize}
+\item Looping limit calculations
+\item Consecutive shape counting
+\end{itemize}
+To understand the algorithm better consider Figure 5, above. \\
+\paragraph{Consecutive Shape Counting}
+To count consecutive shapes one can, add the previously defined offsets to the x and y coordinates and keep track of the similar shapes using a counter. Depending on the slope one can add the offsets as follows:
+\begin{itemize}
+\item Rows: \(y \cdot 10 + x + dx \)
+\item Columns: \((y + dy) \cdot 10 + x\) 
+\item Positive Diagonals: \((y + \text{diagoffset}) \cdot 10 + x + \text{diagoffset}\)
+\item Negative Diagonals: \((y - \text{diagoffset}) \cdot 10 + x + \text{diagoffset}\)
+\end{itemize} \hfill \hfill
+\par Note that the offsets can be negative and that the offsets count from the minimum possible coordinate up to the maximum possible coordinate. Thus, an implementation detail that should not be forgotten is to reset the consecutive shape counter if the sequence is broken, otherwise the algorithm might give a false positive. \\
+\paragraph{Row and Column Limit Calculations} The minimum possible limit for looping is -3 regardless of the slope type. However, this value cannot be hardcoded due to the edge cases. Consider what happens if the player selects the coordinate B1 as the last move (figure add figure number). Then the minimum offset that should be added to the row cannot exceed -1, otherwise the array index bounds will be exceeded. The same applies for the maximum offset. Thus the looping limits for row checking can be defined as follows: \begin{equation}\resizebox{0.9\hsize}{!}{$
+\text{dxmin} =
+\begin{cases}
+ -3 &\text{ if x \(\geq\) D} \\ -x &\text{, otherwise} 
+\end{cases} \qquad 
+\text{dxmax} =
+\begin{cases}
+ 3 &\text{ if x \(\leq\) G} \\ 10-x &\text{, otherwise} 
+\end{cases}$}
+\end{equation} \\
+\paragraph{Positive and Negative Diagonal Limit Calculations}
+There is a little more subtlety involved in calculating the diagonal looping limits due to the fact that both x and y coordinates should be taken into account. Again, consider input B1. In this case, the minimum offset is obviously  -1  = dxmin = dymin = posmin. Now let’s consider the input C1. In this case the minimum diagonal looping limit is bounded by the y coordinate since it is smaller. Thus, it can be concluded that the looping limits of the diagonals depend on the looping limits of rows and columns. The same logic can be repeated for several test cases to obtain the following formulas:
+\begin{itemize}
+\item Posdiagmin = min\{dxmin, dymin\}
+\item Posdiagmax = min\{dxmax, dymax\}
+\item Negdiagmin = min\{dxmax, dymin\}
+\item Negdiagmax = min\{dxmin, dymax\}
+\end{itemize} \hfill \hfill
+\subsubsection{Resetting}
+Resetting is triggered if either a draw or win condition is created. In either case the board game is wiped by writing 00 to all cells. The bookkeeper array is also wiped, and the appropriate counters are reset. The game state is set to parse input in preparation for a new game.
 \section{Conclusion}
 
 \bibliographystyle{ieeetr}
