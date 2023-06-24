@@ -67,13 +67,17 @@ This document is about the end-term project of EE314 Digital Circuits Laboratory
 \end{abstract}
 
 \begin{IEEEkeywords}
-FPGA, Verilog, VGA driver, button debouncing, state-machine
+FPGA, Verilog HDL, VGA driver, button debouncing, state-machine
 \end{IEEEkeywords} 
 
 \section{Introduction}
 \section{Project Overview}
 \subsection{VGA Module}
 \subsection{Button Debouncing Module}
+In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0} and \textbf{activity}, from the user by using push buttons on the FPGA. However, due to mechanical and physical issues, pushbuttons often generate noisy signals called dirty bounces and these bounces preventing us to properly trigger the program. Thus, to eliminate these undesirable effects, we used debouncing module that makes a noisy pushbutton input signal to ideal case. \\
+\par The working principle of the debouncing module is quite simple. When a button is pressed the timer is going to count the elapsed time up to a predefined threshold parameter. If the timer hits the threshold value, the program concludes that the button reaches its steady-state and it has been pressed. Similarly, when the button is released and the steady state is reached, the program concludes that the button has been released. \\
+\par 
+\subsection{Game Controller}
 
 Example citation \cite{butterworth}
 \section{Conclusion}
