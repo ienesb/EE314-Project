@@ -74,32 +74,31 @@ FPGA, Verilog HDL, VGA driver, button debouncing, state-machine
 \section{Introduction}
 \section{Project Overview}
 \subsection{VGA Module}
-In this project, we are expected to use VGA interface of the FPGA to display game board and some information related to the game. 
+In this project, we are expected to use the VGA interface of the FPGA to display the game board and some information related to the game. 
 To do this, we decided to display the game with 640x480 resolution at 60 Hz. \cite{vga} The timing diagram is shown in the figure below.
 \begin{figure}[H]
   \centerline{\includegraphics[scale=0.4]{vga.png}}
    \caption{Timing diagram for the VGA interface}
    \label{Fig. 1.}
 \end{figure} 
-From the timing diagram, we can see that we need two counters namely horizontal counter and vertical counter.
+From the timing diagram, we can see that we need two counters namely a horizontal counter and a vertical counter.
 To drive counters we need a clock with 25 MHz frequency. 
-To obtain a clock signal with that frequency from the internal clock of the FPGA which has 50 MHz frequency we implemented a clock divider circuit. 
-After we obtaned the clock signal with 25 MHz frequency, we connected to the horizontal counter. 
-Horizontal counter counts at every clock cycle, and it counts from 0 to 800. Vertical counter counts 1 when horizontal counter hits 800. 
+To obtain a clock signal with that frequency from the internal clock of the FPGA which has a 50 MHz frequency we implemented a clock divider circuit. 
+After we obtained the clock signal with a 25 MHz frequency, we connected it to the horizontal counter. 
+Horizontal counter counts at every clock cycle, and it counts from 0 to 800. Vertical counter counts 1 when the horizontal counter hits 800. 
 We have two synchronization outputs namely HYSNC and VSYNC to tell the monitor beginning and ending of a row and frame respectively. 
-HSYNC is high when horizontal counter is between 0 and 96, VSYNC is high when vertical counter is between 0 and 2. 
-Altera FPGA uses a digital-to-analog converter that takes 8 bit input from for each color channel and converts it to an analog signal that has a voltage between 
+HSYNC is high when the horizontal counter is between 0 and 96, and VSYNC is high when the vertical counter is between 0 and 2. 
+Altera FPGA uses a digital-to-analog converter that takes 8-bit input for each color channel and converts it to an analog signal that has a voltage between 
 0 and 5 Volts. \cite{fpga} \\
-\par When horizontal counter is between 143 and 784, and vertical counter is between 34 and 515, RGB values of the pixel at the point (hcounter - 143 , ycounter - 34) are returned to the DAC of the FPGA. 
-We implemented an \textit{rgbSelector} module to get the RGB values for a given coordinate on the display. 
-If the given coordinate is in the board region, the module finds corresponding block coordinate and reads which piece is 
+\par When the horizontal counter is between 143 and 784, and the vertical counter is between 34 and 515, RGB values of the pixel at the point (hcounter - 143, ycounter - 34) are returned to the DAC of the FPGA. 
+We implemented a \textit{rgbSelector} module to get the RGB values for a given coordinate on the display. 
+If the given coordinate is in the board region, the module finds the corresponding block coordinate and reads which piece is 
 placed to that coordinate from the memory. Then it gets the RGB value from the memory module that corresponds to the piece. 
-If the given coordinate is not in the board region but in a region that involves a text or picture, it reads the RGB value from 
-corresponding memory. 
-If it is neither in board region or a picture or text region, then it returns white color. \\
-\par Since we need only 5 colors (white, black, red, green, blue), we encoded and stored pictures that we used with 1 bit for each color channel. 
-After \textit{rgbSelector} module returns RGB values with 1 bit for each channel, 
-another module we called \textit{vgaDecoder} converts it to an output with 8 bit for each color channel and returns it to the DAC of the FPGA. \\
+If the given coordinate is not in the board region but in a region that involves a text or picture, it reads the RGB value from the corresponding memory. 
+If it is neither in the board region nor a picture or text region, then it returns a white color. \\
+\par Since we need only 5 colors (white, black, red, green, and blue), we encoded and stored pictures that we used with 1 bit for each color channel. 
+After the \textit{rgbSelector} module returns RGB values with 1 bit for each channel, 
+another module we called \textit{vgaDecoder} converts it to output with 8 bits for each color channel and returns it to the DAC of the FPGA. \\
 \par When the counters are not in the display area, 0 is returned to the DAC of the FPGA. 
 An example of the display is shown in the figure below.  
 \begin{figure}[H]
