@@ -113,7 +113,7 @@ In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0}
 \par The working principle of the \textit{debouncer\_delayed} module is quite simple. When a button is pressed, the timer is going to count the elapsed time up to a predefined threshold parameter. If the timer hits the threshold value, the program concludes that the button has reached its steady state and has been pressed. Similarly, when the button is released and the steady state is reached, the program concludes that the button has been released. \\
 \par After debouncing the button input, we designed another module called \textit{edge\_detector} to detect the negative and positive edges of the debounced input so that we will use the edge signals directly as button signals in the game controller. \\
 \par The \textit{button} module contains both \textit{debouncer\_delayed} and \textit{edge\_detector} modules so that the hierarchical design principle is followed throughout the project. Also, both of these modules, are written like a state machine to make it easier to implement condition-based and flexible code. The waveform simulation result of the \textit{button} module in Quartus II is given in Figure 3. \\
-\par Besides these, in the \textit{button\_top} module each button is defined separately in a hierarchical manner by using the \textit{button} module. Also, we implemented another algorithm so that player can inform the game using the activity button that the player specified a wrong coordinate. Then, the game will allow the player to re-enter a coordinate. To do this, we used the negative and positive edge output of the activity button. One clock cycle after the negative edge is high, a counter starts counting the time until the positive edge is high. Thus, in this interval if the counter hits to pre defined value (3 second), the coordinate inputs will reset and the user must enter a new coordinates. Otherwise, the activity button operates as usual. 
+\par Besides these, in the \textit{button\_top} module each button is defined separately in a hierarchical manner by using the \textit{button} module. Also, we implemented another algorithm so that player can inform the game using the activity button that the player specified a wrong coordinate. Then, the game will allow the player to re-enter a coordinate. To do this, we used the negative and positive edge output of the activity button. One clock cycle after the negative edge is high, a counter starts counting the time until the positive edge is high. Thus, in this interval, if the counter hits a pre-defined value (3 seconds), the coordinate inputs will reset and the user must enter new coordinates. Otherwise, the activity button operates as usual. 
  \begin{figure}[H]
    \centerline{\includegraphics[scale=0.22]{simulation.png}}
     \caption{Button module, waveform simulation result}
@@ -164,7 +164,7 @@ The game board can be modeled as a 2-bit 100-cell wide memory block. A position 
 A win condition can be only created after the last move that is placed on the board. That is why, instead of checking the whole board we just check the area around the last move. To do that we define several offsets: dx, dy, positive diagonal offset, and negative diagonal offset used to check rows, columns, diagonals with positive slopes, and finally diagonals with negative slopes respectively. The slopes are defined with respect to the coordinate system shown in Figure 5.
  \begin{figure}[H]
    \centerline{\includegraphics[scale=0.6]{check.png}}
-    \caption{Button module, waveform simulation result}
+    \caption{Win checking algorithm}
 \end{figure} 
 The win checking state is itself a state machine with two distinct states: 
 \begin{itemize}
@@ -190,7 +190,7 @@ To count consecutive shapes one can add the previously defined offsets to the x 
 \begin{cases}
  3 &\text{ if x \(\leq\) G} \\ 10-x &\text{, otherwise} 
 \end{cases}$}
-\end{gather*} \\
+\end{gather*}
 \paragraph{Positive and Negative Diagonal Limit Calculations}
 There is a little more subtlety involved in calculating the diagonal looping limits because both x and y coordinates should be taken into account. Again, consider input B1. In this case, the minimum offset is -1 = dxmin = dymin = posmin. \\ 
 \par Now let’s consider the input C1. In this case, the minimum diagonal looping limit is bounded by the y coordinate since it is smaller. Thus, it can be concluded that the looping limits of the diagonals depend on the looping limits of rows and columns. The same logic can be repeated for several test cases to obtain the following formulas:
@@ -200,6 +200,11 @@ There is a little more subtlety involved in calculating the diagonal looping lim
 \item Negdiagmin = min\{dxmax, dymin\}
 \item Negdiagmax = min\{dxmin, dymax\}
 \end{itemize} \hfill \hfill
+\par As a result of win cheking algorithm, if one of the side wins the game, an indicating message is displayed at the bottom of the screen and the red line is drawn across four boxes indicating the winning placement as it can be seen in Figure 6. Also, the board is wiped after 10 seconds for a new round and the score of the winner side is increased by one. 
+\begin{figure}[H]
+  \centerline{\includegraphics[scale=0.65, frame]{sample_board_2.png}}
+   \caption{Example of the win state}
+\end{figure} 
 \subsubsection{Resetting}
 Resetting is triggered if either a draw or win condition is created. In either case, the board game is wiped by writing 00 to all cells. The bookkeeper array is also wiped, and the appropriate counters are reset. The game state is set to parse input in preparation for a new game.
 \section{Conclusion}
