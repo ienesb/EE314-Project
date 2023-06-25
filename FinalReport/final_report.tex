@@ -73,8 +73,8 @@ FPGA, Verilog HDL, VGA driver, button debouncing, state-machine
 \end{IEEEkeywords} 
 
 \section{Introduction}
-Turn-based strategy games have been popular among people of all ages for decades because they provide a demanding gaming experience while being simple to understand. Tic Tac Toe and Battleships are two examples of such games. In this project, we will implement such a game called ''Triangles vs. Circles'' in Verilog HDL by using ALtera DE1-SoC FPGA board. \\
-\par The aim of the project is to design a 2D strategy game by taking the necessary inputs from the user thanks to the button on the FPGA. Also, the game features a VGA interface, allowing players to see the board and their moves while the game logic operates in the background. \\
+Turn-based strategy games have been popular among people of all ages for decades because they provide a demanding gaming experience while being simple to understand. Tic Tac Toe and Battleships are two examples of such games. In this project, we will implement such a game called ''Triangles vs. Circles'' in Verilog HDL by using Altera DE1-SoC FPGA board. \\
+\par The aim of the project is to design a 2D strategy game by taking the necessary inputs from the user through the pushbuttons on the FPGA. Also, the game features a VGA interface, allowing players to see the board and their moves while the game logic operates in the background. \\
 \par Our project consists of mainly three part: VGA, button debouncing, and game engine. Also, each main unit includes different sub-units, and they are explained in detail in the following section of the report.  
 \section{Project Overview}
 \subsection{VGA Module}
@@ -112,7 +112,8 @@ An example of the display is shown in Figure 2, below.
 In this project, we need to get three inputs, \textbf{logic 1}, \textbf{logic 0}, and \textbf{activity}, from the user by using push buttons on the FPGA. However, due to mechanical and physical issues, pushbuttons often generate noisy signals called dirty bounces, and these bounces prevent us from properly triggering the program. Thus, to eliminate these undesirable effects, we used the \textit{debouncer\_delayed} module that makes a noisy pushbutton input signal to the ideal input case. \\
 \par The working principle of the \textit{debouncer\_delayed} module is quite simple. When a button is pressed, the timer is going to count the elapsed time up to a predefined threshold parameter. If the timer hits the threshold value, the program concludes that the button has reached its steady state and has been pressed. Similarly, when the button is released and the steady state is reached, the program concludes that the button has been released. \\
 \par After debouncing the button input, we designed another module called \textit{edge\_detector} to detect the negative and positive edges of the debounced input so that we will use the edge signals directly as button signals in the game controller. \\
-\par The \textit{button} module contains both \textit{debouncer\_delayed} and \textit{edge\_detector} modules so that the hierarchical design principle is followed throughout the project. Also, both of these modules, are written like a state machine to make it easier to implement condition-based and flexible code. The waveform simulation result of the \textit{button} module in Quartus II is given in Figure 3. Besides these, in the \textit{button\_top} module each button is defined separately in a hierarchical manner by using the \textit{button} module.
+\par The \textit{button} module contains both \textit{debouncer\_delayed} and \textit{edge\_detector} modules so that the hierarchical design principle is followed throughout the project. Also, both of these modules, are written like a state machine to make it easier to implement condition-based and flexible code. The waveform simulation result of the \textit{button} module in Quartus II is given in Figure 3. \\
+\par Besides these, in the \textit{button\_top} module each button is defined separately in a hierarchical manner by using the \textit{button} module. Also, we implemented another algorithm so that player can inform the game using the activity button that the player specified a wrong coordinate. Then, the game will allow the player to re-enter a coordinate. To do this, we used the negative and positive edge output of the activity button. One clock cycle after the negative edge is high, a counter starts counting the time until the positive edge is high. Thus, in this interval if the counter hits to pre defined value (3 second), the coordinate inputs will reset and the user must enter a new coordinates. Otherwise, the activity button operates as usual. 
  \begin{figure}[H]
    \centerline{\includegraphics[scale=0.22]{simulation.png}}
     \caption{Button module, waveform simulation result}
@@ -150,14 +151,14 @@ As shown in Figure 4, the game engine can be modeled as a state machine that con
    \caption{State machine of the game engine}
    \end{figure}
    \subsubsection{Input Parsing}
-   The input parsing state has the sole role of converting the binary input into x and y coordinates. This is done through the use of two counters – one for the y and the other for x. The counters allow for easy inversion of the order of the input bits and for checking whether the used has provided 8 bits or not. \\
+   The input parsing state has the sole role of converting the binary input into x and y coordinates. This is done through the use of two counters – one for the y and the other for the x. The counters allow for an easy inversion of the order of the input bits and for checking whether the user has provided 8 bits or not. \\
 \subsubsection{Invalid Move Checking}
 If the activity button is pressed after the user has provided 8 bits, the state machine moves on to invld\_mv. In this state two main checks are performed: \begin{itemize} 
 \item The x and y coordinates specified by the user are within range, i.e., the coordinates are greater than or equal to zero and less than 10. This is done using simple if statements.
 \item The specified coordinate is empty. This can be done by taking the OR operator of the two bits of the encoding scheme specified above. Only an empty cell will give zero, if the state is occupied the result of the operator will be one.
 \end{itemize}
 \subsubsection{Bookkeping}
-The game board can be modeled as a 2-bit 100 cell wide memory block. A position is stored in the board as follows: \(y \cdot 10 + x\). In this encoding scheme, the y position is stored in the tens place while the x position is stored in the ones place. Furthermore, another array called bookkeeper is used to (as the name suggests) keep track of all player movements in sequential order. \\
+The game board can be modeled as a 2-bit 100-cell wide memory block. A position is stored in the board as follows: \(y \cdot 10 + x\). In this encoding scheme, the y position is stored in the tens place while the x position is stored in the ones place. Furthermore, another array called bookkeeper is used to (as the name suggests) keep track of all player movements in sequential order. \\
 \par Since the bookkeeper keeps track of movement coordinates sequentially, erasing every sixth move becomes just a trivial task of accessing the bookkeeper array at the appropriate index, using the info retrieved from that array to write 11 to the board. \\
 \subsubsection{Win Checking Algorithm} 
 A win condition can be only created after the last move that is placed on the board. That is why, instead of checking the whole board we just check the area around the last move. To do that we define several offsets: dx, dy, positive diagonal offset, and negative diagonal offset used to check rows, columns, diagonals with positive slopes, and finally diagonals with negative slopes respectively. The slopes are defined with respect to the coordinate system shown in Figure 5.
@@ -172,7 +173,7 @@ The win checking state is itself a state machine with two distinct states:
 \end{itemize}
 To understand the algorithm better consider Figure 5, above. \\
 \paragraph{Consecutive Shape Counting}
-To count consecutive shapes one can, add the previously defined offsets to the x and y coordinates and keep track of the similar shapes using a counter. Depending on the slope one can add the offsets as follows:
+To count consecutive shapes one can add the previously defined offsets to the x and y coordinates and keep track of similar shapes using a counter. Depending on the slope one can add the offsets as follows:
 \begin{itemize}
 \item Rows: \(y \cdot 10 + x + dx \)
 \item Columns: \((y + dy) \cdot 10 + x\) 
@@ -180,7 +181,7 @@ To count consecutive shapes one can, add the previously defined offsets to the x
 \item Negative Diagonals: \((y - \text{diagoffset}) \cdot 10 + x + \text{diagoffset}\)
 \end{itemize} \hfill \hfill
 \par Note that the offsets can be negative and that the offsets count from the minimum possible coordinate up to the maximum possible coordinate. Thus, an implementation detail that should not be forgotten is to reset the consecutive shape counter if the sequence is broken, otherwise the algorithm might give a false positive. \\
-\paragraph{Row and Column Limit Calculations} The minimum possible limit for looping is -3 regardless of the slope type. However, this value cannot be hardcoded due to the edge cases. Consider what happens if the player selects the coordinate B1 as the last move (figure add figure number). Then the minimum offset that should be added to the row cannot exceed -1, otherwise the array index bounds will be exceeded. The same applies for the maximum offset. Thus the looping limits for row checking can be defined as follows: \begin{gather*}\resizebox{0.9\hsize}{!}{$
+\paragraph{Row and Column Limit Calculations} The minimum possible limit for looping is -3 regardless of the slope type. However, this value cannot be hardcoded due to the edge cases. Consider what happens if the player selects the coordinate B1 as the last move as in Figure 5. Then the minimum offset that should be added to the row cannot exceed -1, otherwise, the array index bounds will be exceeded. The same applies to the maximum offset. Thus the looping limits for row checking can be defined as follows: \begin{gather*}\resizebox{0.9\hsize}{!}{$
 \text{dxmin} =
 \begin{cases}
  -3 &\text{ if x \(\geq\) D} \\ -x &\text{, otherwise} 
@@ -191,8 +192,8 @@ To count consecutive shapes one can, add the previously defined offsets to the x
 \end{cases}$}
 \end{gather*} \\
 \paragraph{Positive and Negative Diagonal Limit Calculations}
-There is a little more subtlety involved in calculating the diagonal looping limits due to the fact that both x and y coordinates should be taken into account. Again, consider input B1. In this case, the minimum offset is obviously  -1  = dxmin = dymin = posmin. \\ 
-\par Now let’s consider the input C1. In this case the minimum diagonal looping limit is bounded by the y coordinate since it is smaller. Thus, it can be concluded that the looping limits of the diagonals depend on the looping limits of rows and columns. The same logic can be repeated for several test cases to obtain the following formulas:
+There is a little more subtlety involved in calculating the diagonal looping limits because both x and y coordinates should be taken into account. Again, consider input B1. In this case, the minimum offset is -1 = dxmin = dymin = posmin. \\ 
+\par Now let’s consider the input C1. In this case, the minimum diagonal looping limit is bounded by the y coordinate since it is smaller. Thus, it can be concluded that the looping limits of the diagonals depend on the looping limits of rows and columns. The same logic can be repeated for several test cases to obtain the following formulas:
 \begin{itemize}
 \item Posdiagmin = min\{dxmin, dymin\}
 \item Posdiagmax = min\{dxmax, dymax\}
@@ -200,9 +201,9 @@ There is a little more subtlety involved in calculating the diagonal looping lim
 \item Negdiagmax = min\{dxmin, dymax\}
 \end{itemize} \hfill \hfill
 \subsubsection{Resetting}
-Resetting is triggered if either a draw or win condition is created. In either case the board game is wiped by writing 00 to all cells. The bookkeeper array is also wiped, and the appropriate counters are reset. The game state is set to parse input in preparation for a new game.
+Resetting is triggered if either a draw or win condition is created. In either case, the board game is wiped by writing 00 to all cells. The bookkeeper array is also wiped, and the appropriate counters are reset. The game state is set to parse input in preparation for a new game.
 \section{Conclusion}
-
+As a result, in this project, we implemented a 2D strategy game using a modular and flexible program structure so that the game is both efficient and adaptable to potential future modifications. As a result of the research we did during the project, we also had the opportunity to better understand and learn the Verilog syntax. In addition, we gained experience in debugging as a result of the problems we encountered during the project. Finally, thanks to this enjoyable and instructive project, we learned about collaboration and time management.
 \bibliographystyle{ieeetr}
 \bibliography{refs}
 \end{document}
